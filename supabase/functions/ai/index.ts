@@ -9,7 +9,7 @@
 // Модель можно поменять (gemini-2.0-flash — быстрая и бесплатная).
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-2.5-flash';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -23,24 +23,29 @@ Deno.serve(async (req) => {
     if (!GEMINI_API_KEY) {
       throw new Error('Нет GEMINI_API_KEY. Поставь секрет: npm run ai:secret -- GEMINI_API_KEY=...');
     }
-    const { prompt, system } = await req.json();
+    const { prompt, system, mode } = await req.json();
     if (!prompt) throw new Error('Нужно поле prompt');
 
+    const model = mode === 'image' ? 'gemini-2.5-flash-image' : MODEL;
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemInstruction: system ? { parts: [{ text: system }] } : undefined,
           contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: mode === 'image' ? { responseModalities: ['TEXT', 'IMAGE'] } : undefined,
         }),
       },
     );
 
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-    return new Response(JSON.stringify({ text }), {
+    if (!res.ok) throw new Error(data?.error?.message ?? 'Gemini request failed');
+    const parts = data?.candidates?.[0]?.content?.parts ?? [];
+    const image = parts.find((part: { inlineData?: { data: string; mimeType: string } }) => part.inlineData)?.inlineData;
+    const text = parts.find((part: { text?: string }) => part.text)?.text ?? '';
+    return new Response(JSON.stringify(image ? { text, imageBase64: image.data, mimeType: image.mimeType } : { text }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
   } catch (e) {

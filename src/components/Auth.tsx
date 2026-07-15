@@ -1,26 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-// Вход и регистрация по email + паролю. Это пример — Codex поможет улучшить (Google-вход и т.д.).
+const inspirationWords = ['вдохновляйся', 'идеи на выбор', 'куча тематик!'];
+
 export function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup'>('signup');
+  const [wordIndex, setWordIndex] = useState(0);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    const duration = Math.min(8000, 5000 + inspirationWords[wordIndex].length * 150);
+    const timer = window.setTimeout(
+      () => setWordIndex((current) => (current + 1) % inspirationWords.length),
+      duration,
+    );
+    return () => window.clearTimeout(timer);
+  }, [wordIndex]);
+
+  function selectMode(nextMode: 'signin' | 'signup') {
+    setMode(nextMode);
+    setMessage('');
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setBusy(true);
     setMessage('');
     try {
-      const fn =
-        mode === 'signup'
-          ? supabase.auth.signUp({ email, password })
-          : supabase.auth.signInWithPassword({ email, password });
-      const { error } = await fn;
-      if (error) setMessage(error.message);
-      else if (mode === 'signup') setMessage('Готово! Проверь почту, если нужна подтверждалка.');
+      const result = mode === 'signup'
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
+      if (result.error) setMessage(result.error.message);
+      else if (mode === 'signup') setMessage('Готово! Проверь почту для подтверждения аккаунта.');
     } catch {
       setMessage('Что-то пошло не так. Попробуй ещё раз.');
     } finally {
@@ -28,36 +42,18 @@ export function Auth() {
     }
   }
 
-  return (
-    <section className="card">
-      <h2>{mode === 'signin' ? 'Вход' : 'Регистрация'}</h2>
-      <form onSubmit={handleSubmit} className="form">
-        <input
-          type="email"
-          placeholder="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="пароль (6+ символов)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          minLength={6}
-          required
-        />
-        <button type="submit" disabled={busy}>
-          {busy ? '…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}
-        </button>
-      </form>
-      {message && <p className="message">{message}</p>}
-      <button
-        className="ghost"
-        onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-      >
-        {mode === 'signin' ? 'Нет аккаунта? Зарегистрируйся' : 'Уже есть аккаунт? Войти'}
-      </button>
-    </section>
-  );
+  return <section className="card auth-card">
+    <div className="inspiration" aria-live="polite" key={wordIndex}>{inspirationWords[wordIndex]}</div>
+    <div className="auth-tabs" aria-label="Регистрация или вход">
+      <button type="button" className={`auth-tab ${mode === 'signup' ? 'active' : ''}`} onClick={() => selectMode('signup')}>Регистрация</button>
+      <button type="button" className={`auth-tab signin-tab ${mode === 'signin' ? 'active' : ''}`} onClick={() => selectMode('signin')}>Вход</button>
+    </div>
+    <p className="auth-caption">{mode === 'signup' ? 'Создай аккаунт и сохраняй свои референсы' : 'Продолжи работу со своей коллекцией'}</p>
+    <form onSubmit={handleSubmit} className="form">
+      <input type="email" placeholder="Твой email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+      <input type="password" placeholder="Пароль — минимум 6 символов" value={password} onChange={(event) => setPassword(event.target.value)} minLength={6} required />
+      <button type="submit" disabled={busy}>{busy ? 'Подожди…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}</button>
+    </form>
+    {message && <p className="message">{message}</p>}
+  </section>;
 }
