@@ -9,7 +9,7 @@
 // Модель можно поменять (gemini-2.0-flash — быстрая и бесплатная).
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const MODEL = 'gemini-2.5-flash';
+const MODEL = 'gemini-3.5-flash';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const { prompt, system, mode, styleImageBase64, styleImageMimeType, artworkBase64, artworkMimeType, referenceId } = await req.json();
     if (!prompt) throw new Error('Нужно поле prompt');
 
-    const model = mode === 'image' ? 'gemini-2.5-flash-image' : MODEL;
+    const model = mode === 'image' ? 'gemini-3.1-flash-image' : MODEL;
     const verifyPrompt = `Проверь приложенный рисунок. Он должен достаточно соответствовать идее: ${prompt}. Определи готовность: sketch (набросок/лайн), color (простой покрас без полного рендера), full (полноценный арт с рендером, светом и тенями). Верни только JSON: {"similarity": число от 0 до 1, "detected":"sketch|color|full", "reason":"короткое объяснение по-русски"}.`;
     const parts = mode === 'verify-art'
       ? [{ text: verifyPrompt }, { inlineData: { data: artworkBase64, mimeType: artworkMimeType } }]
