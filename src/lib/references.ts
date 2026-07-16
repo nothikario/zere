@@ -85,7 +85,7 @@ export function getImageUrl(path: string) {
 }
 
 export async function loadPublicReferences(userId: string) {
-  const { data, error } = await supabase.from('references').select('*').eq('user_id', userId).eq('is_public', true).order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('references').select('*').eq('user_id', userId).eq('is_public', true).eq('is_hidden', false).order('created_at', { ascending: false });
   if (error) throw error;
   return data as ArtReference[];
 }
