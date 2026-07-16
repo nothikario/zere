@@ -83,6 +83,7 @@ const translations: [string, string][] = [
   ['Королевский наряд', 'Royal outfit'], ['Крестьянская одежда', 'Peasant clothing'], ['Мантия мага', 'Mage robe'], ['Зачарованные доспехи', 'Enchanted armor'], ['Одежда алхимика', 'Alchemist outfit'],
   ['Неоновая куртка', 'Neon jacket'], ['Киберброня', 'Cyber armor'], ['Походная одежда', 'Hiking clothes'], ['Одежда исследователя', 'Explorer outfit'], ['Лесной плащ', 'Forest cloak'],
   ['Фон:', 'Background:'], ['Пример волос:', 'Hair example:'], ['Пример одежды:', 'Outfit example:'],
+  ['Звёзды, временные создания или постоянное место.', 'Stars, temporary creation attempts, or permanent gallery space.'],
 ];
 
 const orderedTranslations = [...translations].sort(([left], [right]) => right.length - left.length);

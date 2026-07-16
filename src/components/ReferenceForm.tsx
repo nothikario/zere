@@ -35,15 +35,20 @@ export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (refe
   const step = steps.find(({ key }) => key === current.key) ?? steps[0];
   const active = current.characterIndex === undefined ? values : characters[current.characterIndex];
   const draft = useMemo(() => makeDraft(values, characters), [values, characters]);
+  const friendlyError = (error: unknown, fallback: string) => {
+    const text = error instanceof Error ? error.message : '';
+    if (text.toLowerCase().includes('лимит')) return language === 'en' ? "Today's reference creation limit has been reached." : 'Количество созданных референсов на сегодня исчерпано.';
+    return text || fallback;
+  };
 
   function update(key: WizardKey, value: string, comment = false) { const change = (item: WizardValues) => comment ? { ...item, comments: { ...item.comments, [key]: value } } : { ...item, [key]: value }; if (current.characterIndex === undefined) setValues(change); else setCharacters((all) => all.map((item, index) => index === current.characterIndex ? change(item) : item)); }
   function updateCharacter(index: number, key: WizardKey, value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, [key]: value } : item)); }
   function updateComment(index: number, value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, comments: { ...item.comments, gender: value } } : item)); }
   function updateLink(index: number, key: 'hairLink' | 'outfitLink', value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, [key]: value } : item)); }
   async function ensureSaved() { if (saved) return saved; if (isGuest) { if (hasGuestReference()) throw new Error(language === 'en' ? 'Guest mode allows only 1 reference per day.' : 'В гостевом режиме доступен только 1 референс в день.'); const created = { ...draft, id: 'guest', user_id: 'guest', image_path: null, final_art_path: null, is_hidden: false, created_at: new Date().toISOString() } as ArtReference; setSaved(created); return created; } const created = await createReference(draft); setSaved(created); return created; }
-  useEffect(() => { if (isSummary && !saved) ensureSaved().catch((error) => setMessage(error instanceof Error ? error.message : 'Ошибка создания')); }, [isSummary]);
-  async function generate() { setBusy('generate'); try { const reference = await ensureSaved(); if (isGuest) { setImageUrl(await generateGuestImage(reference.prompt)); markGuestReferenceCreated(); } else { const path = await generateReferenceImage(reference, styleExample); setSaved({ ...reference, image_path: path }); setImageUrl(getImageUrl(path)); } } catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка генерации'); } finally { setBusy(''); } }
-  async function save() { setBusy('save'); try { const reference = await ensureSaved(); const completed = isGuest ? { ...reference, image_path: imageUrl || null } : reference; if (isGuest) saveGuestReference(completed); onCreated(completed); } catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка сохранения'); setBusy(''); } }
+  useEffect(() => { if (isSummary && !saved) ensureSaved().catch((error) => setMessage(friendlyError(error, 'Ошибка создания'))); }, [isSummary]);
+  async function generate() { setBusy('generate'); try { const reference = await ensureSaved(); if (isGuest) { setImageUrl(await generateGuestImage(reference.prompt)); markGuestReferenceCreated(); } else { const path = await generateReferenceImage(reference, styleExample); setSaved({ ...reference, image_path: path }); setImageUrl(getImageUrl(path)); } } catch (error) { setMessage(friendlyError(error, 'Ошибка генерации')); } finally { setBusy(''); } }
+  async function save() { setBusy('save'); try { const reference = await ensureSaved(); const completed = isGuest ? { ...reference, image_path: imageUrl || null } : reference; if (isGuest) saveGuestReference(completed); onCreated(completed); } catch (error) { setMessage(friendlyError(error, 'Ошибка сохранения')); setBusy(''); } }
 
   const hairOptions = active.gender === 'Парень' ? maleHairOptions : active.gender === 'Девушка' ? femaleHairOptions : allHairOptions;
   const options = step.key === 'hair' ? hairOptions : step.key === 'outfit' ? outfitOptionsFor(values.theme) : step.options;
