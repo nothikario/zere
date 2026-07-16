@@ -1,53 +1,46 @@
-import { useMemo, useState } from 'react';
-import { ArtReference, createReference, generateReferenceImage, getImageUrl, ReferenceDraft } from '../lib/references';
-import { emptyWizard, steps, WizardKey, WizardValues } from '../lib/wizardOptions';
+import { useEffect, useMemo, useState } from 'react';
+import { ArtReference, createReference, generateGuestImage, generateReferenceImage, getImageUrl, ReferenceDraft } from '../lib/references';
+import { emptyWizard, guestDefaults, guestOptions, maleHairOptions, steps, WizardKey, WizardValues } from '../lib/wizardOptions';
+import { hasGuestReference, markGuestReferenceCreated } from '../lib/usage';
 import { ChoiceStep } from './ChoiceStep';
+import { MultiCharacterStep } from './MultiCharacterStep';
 
-function makeDraft(values: WizardValues): ReferenceDraft {
-  const additions = steps
-    .filter(({ key }) => values.comments[key])
-    .map(({ key }) => `${key}: ${values.comments[key]}`)
-    .join('; ');
-  const links = [values.hairLink && `Пример причёски: ${values.hairLink}`, values.outfitLink && `Пример одежды: ${values.outfitLink}`].filter(Boolean).join('. ');
-  const details = `Пол/образ: ${values.gender}. Лицо: ${values.face}. Эмоция: ${values.emotion}. ${additions}. ${links}`;
-  const prompt = `Full-body character reference, ${values.gender}, ${values.theme}. Hair: ${values.hair}. Face: ${values.face}. Emotion: ${values.emotion}. Body type: ${values.build}. Outfit: ${values.outfit}. Pose: ${values.pose}. ${details}. Detailed concept art, clear silhouette, neutral background.`;
-  return { title: `${values.theme} — ${values.gender}`, theme: values.theme, pose: values.pose, hair: values.hair, build: values.build, outfit: values.outfit, details, prompt };
+const globalKeys: WizardKey[] = ['peopleCount', 'theme', 'style', 'renderType'];
+const characterKeys: WizardKey[] = ['gender', 'hairColor', 'hair', 'face', 'emotion', 'build', 'outfit'];
+type FlowItem = { key: WizardKey; characterIndex?: number; multi?: boolean };
+const fresh = (guest: boolean) => { const source = guest ? guestDefaults : emptyWizard; return { ...source, comments: { ...source.comments } }; };
+
+function makeDraft(values: WizardValues, characters: WizardValues[]): ReferenceDraft {
+  const count = Number(values.peopleCount || 1);
+  const people = characters.slice(0, count).map((person, index) => `Персонаж ${index + 1}: ${person.gender}, волосы ${person.hairColor}, ${person.hair}, лицо ${person.face}, эмоция ${person.emotion}, телосложение ${person.build}, образ ${person.outfit}, детали ${person.comments.gender}.`).join(' ');
+  const pose = `Поза: ${values.pose}. Взаимодействие: ${values.comments.pose}. ${values.poseLink ? `Пример позы: ${values.poseLink}.` : ''}`;
+  const first = characters[0];
+  return { title: `${values.theme} — ${count} персонаж${count === 1 ? '' : 'а'}`, theme: values.theme, pose: values.pose, hair: first.hair, build: first.build, outfit: first.outfit, details: `${people} ${pose}`, prompt: `${count} full-body characters, ${values.theme}, ${values.style} style, ${values.renderType}. ${people} ${pose} Clear composition.`, art_style: values.style, render_type: values.renderType, people_count: count };
 }
 
-export function ReferenceForm({ onCreated }: { onCreated: () => void }) {
-  const [values, setValues] = useState<WizardValues>(emptyWizard);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [saved, setSaved] = useState<ArtReference | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
-  const [busy, setBusy] = useState<'generate' | 'save' | ''>('');
-  const [message, setMessage] = useState('');
-  const draft = useMemo(() => makeDraft(values), [values]);
-  const isSummary = stepIndex === steps.length;
-  const step = steps[Math.min(stepIndex, steps.length - 1)];
+export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: () => void; isGuest?: boolean }) {
+  const [values, setValues] = useState<WizardValues>(() => fresh(isGuest));
+  const [characters, setCharacters] = useState<WizardValues[]>(() => Array.from({ length: 4 }, () => fresh(isGuest)));
+  const [stepIndex, setStepIndex] = useState(0); const [saved, setSaved] = useState<ArtReference | null>(null);
+  const [imageUrl, setImageUrl] = useState(''); const [busy, setBusy] = useState(''); const [message, setMessage] = useState(''); const [styleExample, setStyleExample] = useState<File>();
+  const count = Number(values.peopleCount || 1);
+  const flow = useMemo<FlowItem[]>(() => [...globalKeys.map((key) => ({ key })), ...(count === 1 ? characterKeys.map((key) => ({ key, characterIndex: 0 })) : [{ key: 'gender' as WizardKey, multi: true }]), { key: 'pose' }], [count]);
+  const isSummary = stepIndex >= flow.length; const current = flow[Math.min(stepIndex, flow.length - 1)];
+  const step = steps.find(({ key }) => key === current.key) ?? steps[0];
+  const active = current.characterIndex === undefined ? values : characters[current.characterIndex];
+  const draft = useMemo(() => makeDraft(values, characters), [values, characters]);
 
-  function setValue(key: WizardKey, value: string) { setValues((current) => ({ ...current, [key]: value })); }
-  function setComment(key: WizardKey, value: string) { setValues((current) => ({ ...current, comments: { ...current.comments, [key]: value } })); }
-  async function ensureSaved() { if (saved) return saved; const created = await createReference(draft); setSaved(created); return created; }
-  async function generate() {
-    setBusy('generate'); setMessage('');
-    try { const reference = await ensureSaved(); const path = await generateReferenceImage(reference); setSaved({ ...reference, image_path: path }); setImageUrl(await getImageUrl(path)); }
-    catch (error) { setMessage(error instanceof Error ? error.message : 'Не получилось создать изображение'); }
-    finally { setBusy(''); }
-  }
-  async function save() {
-    setBusy('save'); setMessage('');
-    try { await ensureSaved(); onCreated(); }
-    catch { setMessage('Не получилось сохранить референс. Попробуй ещё раз.'); setBusy(''); }
-  }
+  function update(key: WizardKey, value: string, comment = false) { const change = (item: WizardValues) => comment ? { ...item, comments: { ...item.comments, [key]: value } } : { ...item, [key]: value }; if (current.characterIndex === undefined) setValues(change); else setCharacters((all) => all.map((item, index) => index === current.characterIndex ? change(item) : item)); }
+  function updateCharacter(index: number, key: WizardKey, value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, [key]: value } : item)); }
+  function updateComment(index: number, value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, comments: { ...item.comments, gender: value } } : item)); }
+  async function ensureSaved() { if (saved) return saved; if (isGuest) { if (hasGuestReference()) throw new Error('Гостевой лимит — 1 референс.'); return { ...draft, id: 'guest', user_id: 'guest', image_path: null, final_art_path: null, created_at: new Date().toISOString() } as ArtReference; } const created = await createReference(draft); setSaved(created); return created; }
+  useEffect(() => { if (isSummary && !saved) ensureSaved().catch((error) => setMessage(error instanceof Error ? error.message : 'Ошибка создания')); }, [isSummary]);
+  async function generate() { setBusy('generate'); try { const reference = await ensureSaved(); if (isGuest) { setImageUrl(await generateGuestImage(reference.prompt)); markGuestReferenceCreated(); } else { const path = await generateReferenceImage(reference, styleExample); setSaved({ ...reference, image_path: path }); setImageUrl(getImageUrl(path)); } } catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка генерации'); } finally { setBusy(''); } }
+  async function save() { setBusy('save'); try { await ensureSaved(); if (isGuest) markGuestReferenceCreated(); onCreated(); } catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка сохранения'); setBusy(''); } }
 
-  return <main className="page wizard-page">
-    <div className="progress"><span style={{ width: `${((stepIndex + 1) / (steps.length + 1)) * 100}%` }} /></div>
-    {!isSummary ? <ChoiceStep step={step} value={values[step.key]} comment={values.comments[step.key]} link={step.link ? values[step.link] : ''} onValue={(value) => setValue(step.key, value)} onComment={(value) => setComment(step.key, value)} onLink={(value) => step.link && setValues((current) => ({ ...current, [step.link!]: value }))} /> : <section className="reference-result">
-      <div className="eyebrow">РЕФЕРЕНС ГОТОВ</div><h1>Посмотри, что <em>получилось</em></h1>
-      <div className="result-layout"><div className="result-image">{imageUrl ? <img src={imageUrl} alt={draft.title} /> : <div><span>✦</span><p>Здесь появится генерация</p></div>}</div><div className="result-copy"><h2>{draft.title}</h2><p>{draft.details}</p><h3>Поза и образ</h3><p>{values.pose}. {values.comments.pose}</p><h3>Промпт</h3><p className="result-prompt">{draft.prompt}</p></div></div>
-      <div className="result-actions"><button className="generate-large" disabled={Boolean(busy)} onClick={generate}>{busy === 'generate' ? 'Создаём…' : '✦ Создать генерацию'}</button><button className="primary" disabled={Boolean(busy)} onClick={save}>{busy === 'save' ? 'Сохраняем…' : 'Сохранить референс →'}</button></div>
-    </section>}
-    {message && <p className="message wizard-message">{message}</p>}
-    {!isSummary && <div className="wizard-navigation"><button className="back-button" disabled={stepIndex === 0} onClick={() => setStepIndex((index) => index - 1)}>← Назад</button><span>{stepIndex + 1} / {steps.length}</span><button className="next-button" disabled={!values[step.key]} onClick={() => setStepIndex((index) => index + 1)}>{stepIndex === steps.length - 1 ? 'Создать референс →' : 'Далее →'}</button></div>}
-  </main>;
+  const options = (isGuest ? guestOptions[step.key] : undefined) ?? (step.key === 'hair' && active.gender === 'Парень' ? maleHairOptions : step.options);
+  const shownStep = current.characterIndex === undefined ? step : { ...step, eyebrow: 'ПЕРСОНАЖ 1', title: `${step.title} — персонаж 1` };
+  const charactersReady = characters.slice(0, count).every((person) => characterKeys.every((key) => person[key]));
+  const form = current.multi ? <MultiCharacterStep characters={characters} count={count} onChange={updateCharacter} onComment={updateComment}/> : <><ChoiceStep step={{ ...shownStep, options }} value={active[step.key]} comment={active.comments[step.key]} link={step.key === 'pose' ? values.poseLink : ''} restricted={isGuest} hideCustom={step.key === 'peopleCount'} onValue={(value) => update(step.key, value)} onComment={(value) => update(step.key, value, true)} onLink={(value) => setValues((item) => ({ ...item, poseLink: value }))}/>{step.key === 'style' && !isGuest && <label className="style-upload"><span>Фото своей работы для похожего стиля</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setStyleExample(event.target.files?.[0])}/><small>{styleExample?.name ?? 'Необязательно'}</small></label>}</>;
+  return <main className="page wizard-page"><div className="progress"><span style={{ width: `${((stepIndex + 1) / (flow.length + 1)) * 100}%` }}/></div>{!isSummary ? form : <section className="reference-result"><div className="eyebrow">РЕФЕРЕНС ГОТОВ</div><h1>Посмотри, что <em>получилось</em></h1><div className="result-layout"><div className="result-image">{imageUrl ? <img src={imageUrl} alt={draft.title}/> : <div><span>✦</span><p>Здесь появится генерация</p></div>}</div><div className="result-copy"><h2>{draft.title}</h2><p>{draft.details}</p><h3>Стиль</h3><p>{values.style} · {values.renderType}</p><h3>Промпт</h3><p className="result-prompt">{draft.prompt}</p></div></div><div className="result-actions"><button className="generate-large" disabled={Boolean(busy)} onClick={generate}>{busy === 'generate' ? 'Создаём…' : '✦ Создать генерацию'}</button><button className="primary" disabled={Boolean(busy)} onClick={save}>В мои референсы →</button></div></section>}{message && <p className="message wizard-message">{message}</p>}{!isSummary && <div className="wizard-navigation"><button className="back-button" disabled={!stepIndex} onClick={() => setStepIndex(stepIndex - 1)}>← Назад</button><span>{stepIndex + 1} / {flow.length}</span><button className="next-button" disabled={current.multi ? !charactersReady : !active[step.key]} onClick={() => setStepIndex(stepIndex + 1)}>{stepIndex === flow.length - 1 ? 'Создать референс →' : 'Далее →'}</button></div>}</main>;
 }

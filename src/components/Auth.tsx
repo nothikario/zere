@@ -3,13 +3,15 @@ import { supabase } from '../lib/supabase';
 
 const inspirationWords = ['вдохновляйся', 'идеи на выбор', 'куча тематик!'];
 
-export function Auth() {
+export function Auth({ onGuest }: { onGuest: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [wordIndex, setWordIndex] = useState(0);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [awaitingCode, setAwaitingCode] = useState(false);
+  const [code, setCode] = useState('');
 
   useEffect(() => {
     const duration = Math.min(8000, 5000 + inspirationWords[wordIndex].length * 150);
@@ -34,12 +36,21 @@ export function Auth() {
         ? await supabase.auth.signUp({ email, password })
         : await supabase.auth.signInWithPassword({ email, password });
       if (result.error) setMessage(result.error.message);
-      else if (mode === 'signup') setMessage('Готово! Проверь почту для подтверждения аккаунта.');
+      else if (mode === 'signup') {
+        setAwaitingCode(true);
+        setMessage('Мы отправили код на почту. Введи его ниже.');
+      }
     } catch {
       setMessage('Что-то пошло не так. Попробуй ещё раз.');
     } finally {
       setBusy(false);
     }
+  }
+
+  async function verifyCode(event: React.FormEvent) {
+    event.preventDefault(); setBusy(true); setMessage('');
+    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'signup' });
+    setMessage(error ? error.message : 'Почта подтверждена!'); setBusy(false);
   }
 
   async function continueWithGoogle() {
@@ -67,11 +78,16 @@ export function Auth() {
     <p className="auth-caption">{mode === 'signup' ? 'Создай аккаунт и сохраняй свои референсы' : 'Продолжи работу со своей коллекцией'}</p>
     <button type="button" className="google-auth-button" disabled={busy} onClick={continueWithGoogle}><span className="google-mark">G</span>Продолжить через Google</button>
     <div className="auth-divider"><span>или через email</span></div>
-    <form onSubmit={handleSubmit} className="form">
+    {awaitingCode ? <form onSubmit={verifyCode} className="form">
+      <input inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="Код из письма" value={code} onChange={(event) => setCode(event.target.value.trim())} required />
+      <button type="submit" disabled={busy || code.length < 6}>{busy ? 'Проверяем…' : 'Подтвердить почту'}</button>
+      <button type="button" className="ghost" onClick={() => setAwaitingCode(false)}>Изменить email</button>
+    </form> : <form onSubmit={handleSubmit} className="form">
       <input type="email" placeholder="Твой email" value={email} onChange={(event) => setEmail(event.target.value)} required />
       <input type="password" placeholder="Пароль — минимум 6 символов" value={password} onChange={(event) => setPassword(event.target.value)} minLength={6} required />
       <button type="submit" disabled={busy}>{busy ? 'Подожди…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}</button>
-    </form>
+    </form>}
     {message && <p className="message">{message}</p>}
+    <button type="button" className="guest-button" onClick={onGuest}>Продолжить без аккаунта →</button>
   </section>;
 }

@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export type ReferenceDraft = {
   title: string; theme: string; pose: string; hair: string;
-  build: string; outfit: string; details: string; prompt: string;
+  build: string; outfit: string; details: string; prompt: string; art_style: string; render_type: string; people_count: number;
 };
 
 export type ArtReference = ReferenceDraft & {
@@ -16,6 +16,8 @@ export async function loadReferences() {
 }
 
 export async function createReference(draft: ReferenceDraft) {
+  const claim = await supabase.rpc('claim_generation_slot');
+  if (claim.error) throw claim.error;
   const { data, error } = await supabase.from('references').insert(draft).select().single();
   if (error) throw error;
   return data as ArtReference;
@@ -27,9 +29,14 @@ export async function deleteReference(reference: ArtReference) {
   if (error) throw error;
 }
 
-export async function generateReferenceImage(reference: ArtReference) {
+async function fileToBase64(file: File) {
+  const url = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
+  return url.split(',')[1];
+}
+
+export async function generateReferenceImage(reference: ArtReference, styleExample?: File) {
   const { data, error } = await supabase.functions.invoke('ai', {
-    body: { mode: 'image', prompt: reference.prompt },
+    body: { mode: 'image', prompt: reference.prompt, styleImageBase64: styleExample ? await fileToBase64(styleExample) : undefined, styleImageMimeType: styleExample?.type },
   });
   if (error || !data?.imageBase64) throw new Error(data?.error ?? error?.message ?? 'Не удалось создать изображение');
   const session = await supabase.auth.getSession();
@@ -44,6 +51,12 @@ export async function generateReferenceImage(reference: ArtReference) {
   return path;
 }
 
+export async function generateGuestImage(prompt: string) {
+  const { data, error } = await supabase.functions.invoke('ai', { body: { mode: 'image', prompt } });
+  if (error || !data?.imageBase64) throw new Error(data?.error ?? error?.message ?? 'Не удалось создать изображение');
+  return `data:${data.mimeType ?? 'image/png'};base64,${data.imageBase64}`;
+}
+
 export function getImageUrl(path: string) {
   return supabase.storage.from('reference-images').getPublicUrl(path).data.publicUrl;
 }
@@ -55,13 +68,17 @@ export async function loadPublicReferences(userId: string) {
 }
 
 export async function uploadFinalArtwork(reference: ArtReference, file: File) {
+  const verification = await supabase.functions.invoke('ai', {
+    body: { mode: 'verify-art', referenceId: reference.id, prompt: reference.prompt, artworkBase64: await fileToBase64(file), artworkMimeType: file.type },
+  });
+  if (verification.error || !verification.data?.accepted) throw new Error(verification.data?.reason ?? verification.error?.message ?? 'Рисунок не прошёл проверку');
   const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const path = `${reference.user_id}/${reference.id}-final.${extension}`;
   const upload = await supabase.storage.from('reference-images').upload(path, file, { contentType: file.type, upsert: true });
   if (upload.error) throw upload.error;
   const update = await supabase.from('references').update({ final_art_path: path }).eq('id', reference.id);
   if (update.error) throw update.error;
-  return path;
+  return { path, stars: Number(verification.data.stars) };
 }
 
 export function exportToGoogleDocs(references: ArtReference[]) {
