@@ -76,7 +76,8 @@ const translations: [string, string][] = [
   ['Например: персонаж 1 приобнимает персонажа 2, а тот отстраняется', 'For example: character 1 hugs character 2 while they pull away'],
 ];
 
-function translate(value: string) { return translations.reduce((text, [ru, en]) => text.split(ru).join(en), value); }
+const orderedTranslations = [...translations].sort(([left], [right]) => right.length - left.length);
+function translate(value: string) { return orderedTranslations.reduce((text, [ru, en]) => text.split(ru).join(en), value); }
 
 export function usePageTranslation() {
   const { language } = useLanguage();
