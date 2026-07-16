@@ -1,4 +1,4 @@
-export type WizardKey = 'peopleCount' | 'theme' | 'style' | 'renderType' | 'gender' | 'hairColor' | 'hair' | 'face' | 'emotion' | 'build' | 'outfit' | 'pose';
+export type WizardKey = 'peopleCount' | 'theme' | 'style' | 'renderType' | 'gender' | 'hairColor' | 'hair' | 'face' | 'emotion' | 'build' | 'outfit' | 'bottom' | 'background' | 'pose';
 
 export type WizardValues = Record<WizardKey, string> & {
   hairLink: string;
@@ -20,15 +20,27 @@ export type WizardStep = {
 
 export const guestDefaults: WizardValues = {
   peopleCount: '1', theme: 'Повседневность', style: 'Манга', renderType: 'Скетч', gender: '', hairColor: '', hair: 'Хвост', face: 'Обычные', emotion: 'Спокойствие',
-  build: 'Среднее', outfit: 'Уличный стиль', pose: 'Стоит прямо', hairLink: '', outfitLink: '', poseLink: '',
-  comments: { peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', pose: '' },
+  build: 'Среднее', outfit: 'Уличный стиль', bottom: 'Брюки', background: 'Без фона', pose: 'Стоит прямо', hairLink: '', outfitLink: '', poseLink: '',
+  comments: { peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '' },
 };
 
 export const guestOptions: Partial<Record<WizardKey, string[]>> = {
-  peopleCount: ['1'], theme: ['Повседневность'], hair: ['Хвост'], face: ['Обычные'], build: ['Среднее'], pose: ['Стоит прямо'],
+  peopleCount: ['1'], theme: ['Повседневность'], emotion: ['Спокойствие'], face: ['Обычные'], build: ['Среднее'], background: ['Без фона'], pose: ['Стоит прямо'],
 };
 
 export const maleHairOptions = ['Короткая стрижка', 'Андеркат', 'Квифф', 'Цезарь', 'Средние волосы', 'Длинные волосы'];
+export const femaleHairOptions = ['Каскад', 'Косички', 'Каре', 'Длинные волны', 'Высокий хвост', 'Короткая стрижка'];
+export const allHairOptions = [...new Set([...femaleHairOptions, ...maleHairOptions])];
+
+const outfitsByTheme: Record<string, string[]> = {
+  'Космос': ['Скафандр', 'Форма пилота', 'Футуристический костюм', 'Техно-комбинезон'],
+  'Повседневность': ['Школьная форма', 'Уличный стиль', 'Спортивный стиль', 'Классический образ'],
+  'Средневековье': ['Доспехи', 'Длинный плащ', 'Крестьянская одежда', 'Королевский наряд'],
+  'Магия': ['Мантия мага', 'Лёгкое платье', 'Зачарованные доспехи', 'Одежда алхимика'],
+  'Киберпанк': ['Неоновая куртка', 'Техно-комбинезон', 'Уличный стиль', 'Киберброня'],
+  'Природа': ['Походная одежда', 'Лёгкое платье', 'Одежда исследователя', 'Лесной плащ'],
+};
+export const outfitOptionsFor = (theme: string) => outfitsByTheme[theme] ?? ['Длинный плащ', 'Лёгкое платье', 'Доспехи', 'Уличный стиль', 'Футуристический костюм', 'Классический образ'];
 
 export const steps: WizardStep[] = [
   { key: 'peopleCount', eyebrow: 'ШАГ 1', title: 'Сколько будет персонажей?', hint: 'Можно создать сцену от одного до четырёх героев.', options: ['1', '2', '3', '4'], customPlaceholder: 'Количество', commentPlaceholder: '' },
@@ -42,11 +54,13 @@ export const steps: WizardStep[] = [
   { key: 'emotion', eyebrow: 'ШАГ 5', title: 'Добавь эмоцию', hint: 'Что сейчас чувствует твой персонаж?', options: ['Радость', 'Грусть', 'Спокойствие', 'Злость', 'Удивление', 'Смущение'], customPlaceholder: 'Какую эмоцию для персонажа хочешь ты?', commentPlaceholder: 'Например: улыбается губами, а из глаз текут маленькие слёзы' },
   { key: 'build', eyebrow: 'ШАГ 6', title: 'Телосложение', hint: 'Варианты подойдут для выбранного образа.', options: ['Среднее', 'Стройное', 'Атлетичное', 'Крепкое', 'Хрупкое', 'Пышное', 'Высокое'], customPlaceholder: 'Опиши телосложение точнее', commentPlaceholder: 'Например: широкие плечи, длинные ноги и сильные руки' },
   { key: 'outfit', eyebrow: 'ШАГ 7', title: 'Подбери одежду', hint: 'Костюм рассказывает о мире и характере.', options: ['Длинный плащ', 'Лёгкое платье', 'Доспехи', 'Уличный стиль', 'Футуристический костюм', 'Классический образ'], customPlaceholder: 'Опиши свою идею одежды', commentPlaceholder: 'Например: потёртая кожа, серебряные застёжки и зелёная вышивка', link: 'outfitLink' },
+  { key: 'bottom', eyebrow: 'ШАГ 8', title: 'Выбери нижнюю часть одежды', hint: 'Она дополнит выбранный образ.', options: ['Брюки', 'Юбка', 'Шорты', 'Длинная юбка'], customPlaceholder: 'Опиши свой вариант', commentPlaceholder: 'Например: широкие брюки с ремнями' },
+  { key: 'background', eyebrow: 'ШАГ 9', title: 'Добавить фон?', hint: 'Выбери, нужен ли персонажу фон.', options: ['Без фона', 'С фоном'], customPlaceholder: 'Опиши фон', commentPlaceholder: 'Например: школьный двор на закате' },
   { key: 'pose', eyebrow: 'ПОСЛЕДНИЙ ШАГ', title: 'Поза и взаимодействие', hint: 'Опиши, как персонажи расположены относительно друг друга.', options: ['Стоит прямо', 'Вполоборота', 'Сидит', 'В движении', 'Боевая стойка', 'Смотрит через плечо'], customPlaceholder: 'Опиши свою позу', commentPlaceholder: 'Например: персонаж 1 приобнимает персонажа 2, а тот отстраняется', link: 'poseLink' },
 ];
 
 export const emptyWizard: WizardValues = {
-  peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', pose: '',
+  peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '',
   hairLink: '', outfitLink: '', poseLink: '',
-  comments: { peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', pose: '' },
+  comments: { peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '' },
 };

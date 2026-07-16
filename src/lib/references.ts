@@ -80,6 +80,7 @@ export async function generateGuestImage(prompt: string) {
 }
 
 export function getImageUrl(path: string) {
+  if (path.startsWith('data:') || path.startsWith('http')) return path;
   return supabase.storage.from('reference-images').getPublicUrl(path).data.publicUrl;
 }
 

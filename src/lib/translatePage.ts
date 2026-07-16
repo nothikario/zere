@@ -74,6 +74,15 @@ const translations: [string, string][] = [
   ['Например: широкие плечи, длинные ноги и сильные руки', 'For example: broad shoulders, long legs, and strong arms'],
   ['Например: потёртая кожа, серебряные застёжки и зелёная вышивка', 'For example: worn leather, silver clasps, and green embroidery'],
   ['Например: персонаж 1 приобнимает персонажа 2, а тот отстраняется', 'For example: character 1 hugs character 2 while they pull away'],
+  ['В гостевом режиме доступен только один референс.', 'Only one reference is available in guest mode.'],
+  ['Посмотри, что', 'See what we'], ['получилось', 'created'], ['персонаж', 'character'],
+  ['Андеркат', 'Undercut'], ['Квифф', 'Quiff'], ['Цезарь', 'Caesar cut'], ['Средние волосы', 'Medium-length hair'], ['Длинные волосы', 'Long hair'],
+  ['Добавить фон?', 'Add a background?'], ['Выбери, нужен ли персонажу фон.', 'Choose whether your character needs a background.'], ['Без фона', 'No background'], ['С фоном', 'With background'],
+  ['Выбери нижнюю часть одежды', 'Choose the lower part of the outfit'], ['Она дополнит выбранный образ.', 'Complete the selected outfit.'], ['Брюки или юбка?', 'Pants or skirt?'], ['Брюки', 'Pants'], ['Юбка', 'Skirt'], ['Шорты', 'Shorts'], ['Длинная юбка', 'Long skirt'],
+  ['Школьная форма', 'School uniform'], ['Спортивный стиль', 'Sportswear'], ['Скафандр', 'Spacesuit'], ['Форма пилота', 'Pilot uniform'], ['Техно-комбинезон', 'Tech jumpsuit'],
+  ['Королевский наряд', 'Royal outfit'], ['Крестьянская одежда', 'Peasant clothing'], ['Мантия мага', 'Mage robe'], ['Зачарованные доспехи', 'Enchanted armor'], ['Одежда алхимика', 'Alchemist outfit'],
+  ['Неоновая куртка', 'Neon jacket'], ['Киберброня', 'Cyber armor'], ['Походная одежда', 'Hiking clothes'], ['Одежда исследователя', 'Explorer outfit'], ['Лесной плащ', 'Forest cloak'],
+  ['Фон:', 'Background:'], ['Пример волос:', 'Hair example:'], ['Пример одежды:', 'Outfit example:'],
 ];
 
 const orderedTranslations = [...translations].sort(([left], [right]) => right.length - left.length);

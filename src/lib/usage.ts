@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import type { ArtReference } from './references';
 
 export type Usage = {
   streak: number;
@@ -35,6 +36,7 @@ export async function buyCreationSlot() {
 }
 
 const GUEST_REFERENCE_KEY = 'refri-guest-reference-used';
+const GUEST_REFERENCE_DATA_KEY = 'refri-guest-reference';
 
 export function hasGuestReference() {
   return localStorage.getItem(GUEST_REFERENCE_KEY) === 'true';
@@ -42,4 +44,20 @@ export function hasGuestReference() {
 
 export function markGuestReferenceCreated() {
   localStorage.setItem(GUEST_REFERENCE_KEY, 'true');
+}
+
+export function saveGuestReference(reference: ArtReference) {
+  markGuestReferenceCreated();
+  const stored = reference.image_path?.startsWith('data:') ? { ...reference, image_path: null } : reference;
+  localStorage.setItem(GUEST_REFERENCE_DATA_KEY, JSON.stringify(stored));
+}
+
+export function loadGuestReference() {
+  const value = localStorage.getItem(GUEST_REFERENCE_DATA_KEY);
+  if (!value) return null;
+  try { return JSON.parse(value) as ArtReference; } catch { return null; }
+}
+
+export function removeGuestReference() {
+  localStorage.removeItem(GUEST_REFERENCE_DATA_KEY);
 }

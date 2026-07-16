@@ -12,7 +12,7 @@ import { Shop } from './components/Shop';
 import { ArtReference, loadReferences } from './lib/references';
 import { loadMyProfile, Profile } from './lib/profiles';
 import { supabase } from './lib/supabase';
-import { Usage, visitAndGetUsage } from './lib/usage';
+import { loadGuestReference, Usage, visitAndGetUsage } from './lib/usage';
 import { LanguageSelect } from './components/LanguageSelect';
 import { useLanguage } from './lib/language';
 import { usePageTranslation } from './lib/translatePage';
@@ -26,6 +26,7 @@ export default function App() {
   const [profileChecked, setProfileChecked] = useState(false);
   const [page, setPage] = useState<Page>('home');
   const [references, setReferences] = useState<ArtReference[]>([]);
+  const [guestReferences, setGuestReferences] = useState<ArtReference[]>(() => { const item = loadGuestReference(); return item ? [item] : []; });
   const [loading, setLoading] = useState(true);
   const [guest, setGuest] = useState(false);
   const [usage, setUsage] = useState<Usage>();
@@ -34,7 +35,7 @@ export default function App() {
   if (!languageChosen) return <LanguageSelect onContinue={() => setLanguageChosen(true)}/>;
   if (loading || (session && !profileChecked)) return <div className="splash">Refri<span>.</span></div>;
   if (!session && !guest) return <div className="auth-shell"><div className="auth-intro"><div className="brand-static">Refri<span>.</span></div><h1>{language === 'en' ? <>Your ideas.<br/><em>Your characters.</em></> : <>Твои идеи.<br/><em>Твои персонажи.</em></>}</h1><p>{language === 'en' ? 'Collect references, create visuals, and discover other artists.' : 'Собирай референсы, создавай визуалы и находи других художников.'}</p></div><Auth onGuest={() => setGuest(true)} /></div>;
-  if (guest) return <><Header page={page} onNavigate={setPage} onSignOut={() => { setGuest(false); setLanguageChosen(false); setPage('home'); }}/>{page === 'create' ? <ReferenceForm isGuest onCreated={() => setPage('home')} /> : <Home onCreate={() => setPage('create')} onGallery={() => undefined} onDiscover={() => undefined} />}</>;
+  if (guest) return <><Header page={page} isGuest onNavigate={setPage} onSignOut={() => { setGuest(false); setLanguageChosen(false); setPage('home'); }}/>{page === 'create' ? <ReferenceForm isGuest onCreated={(reference) => { if (reference) setGuestReferences([reference]); setPage('gallery'); }} /> : page === 'gallery' ? <Gallery isGuest references={guestReferences} setReferences={setGuestReferences} onCreate={() => setPage('create')} onReward={() => undefined}/> : <Home onCreate={() => setPage('create')} onGallery={() => setPage('gallery')} onDiscover={() => undefined} />}</>;
   if (!session) return null;
   if (!profile) return <ProfileSetup userId={session.user.id} onReady={setProfile}/>;
   const navigate = (next: Page) => setPage(next);
