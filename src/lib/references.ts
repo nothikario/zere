@@ -6,7 +6,7 @@ export type ReferenceDraft = {
 };
 
 export type ArtReference = ReferenceDraft & {
-  id: string; user_id: string; image_path: string | null; final_art_path: string | null; created_at: string;
+  id: string; user_id: string; image_path: string | null; final_art_path: string | null; created_at: string; is_hidden: boolean;
 };
 
 export async function loadReferences() {
@@ -26,6 +26,11 @@ export async function createReference(draft: ReferenceDraft) {
 export async function deleteReference(reference: ArtReference) {
   if (reference.image_path) await supabase.storage.from('reference-images').remove([reference.image_path]);
   const { error } = await supabase.from('references').delete().eq('id', reference.id);
+  if (error) throw error;
+}
+
+export async function setReferenceHidden(referenceId: string, isHidden: boolean) {
+  const { error } = await supabase.from('references').update({ is_hidden: isHidden }).eq('id', referenceId);
   if (error) throw error;
 }
 
