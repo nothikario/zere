@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../lib/language';
 
 const inspirationWords = ['вдохновляйся', 'идеи на выбор', 'куча тематик!'];
 
 export function Auth({ onGuest }: { onGuest: () => void }) {
+  const en = useLanguage().language === 'en';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
@@ -71,13 +73,13 @@ export function Auth({ onGuest }: { onGuest: () => void }) {
 
   return <section className="card auth-card">
     <div className="inspiration" aria-live="polite" key={wordIndex}>{inspirationWords[wordIndex]}</div>
-    <div className="auth-tabs" aria-label="Регистрация или вход">
-      <button type="button" className={`auth-tab ${mode === 'signup' ? 'active' : ''}`} onClick={() => selectMode('signup')}>Регистрация</button>
-      <button type="button" className={`auth-tab signin-tab ${mode === 'signin' ? 'active' : ''}`} onClick={() => selectMode('signin')}>Вход</button>
+    <div className="auth-tabs" aria-label={en ? 'Sign up or sign in' : 'Регистрация или вход'}>
+      <button type="button" className={`auth-tab ${mode === 'signup' ? 'active' : ''}`} onClick={() => selectMode('signup')}>{en ? 'Sign up' : 'Регистрация'}</button>
+      <button type="button" className={`auth-tab signin-tab ${mode === 'signin' ? 'active' : ''}`} onClick={() => selectMode('signin')}>{en ? 'Sign in' : 'Вход'}</button>
     </div>
-    <p className="auth-caption">{mode === 'signup' ? 'Создай аккаунт и сохраняй свои референсы' : 'Продолжи работу со своей коллекцией'}</p>
-    <button type="button" className="google-auth-button" disabled={busy} onClick={continueWithGoogle}><span className="google-mark">G</span>Продолжить через Google</button>
-    <div className="auth-divider"><span>или через email</span></div>
+    <p className="auth-caption">{mode === 'signup' ? (en ? 'Create an account and save your references' : 'Создай аккаунт и сохраняй свои референсы') : (en ? 'Continue working with your collection' : 'Продолжи работу со своей коллекцией')}</p>
+    <button type="button" className="google-auth-button" disabled={busy} onClick={continueWithGoogle}><span className="google-mark">G</span>{en ? 'Continue with Google' : 'Продолжить через Google'}</button>
+    <div className="auth-divider"><span>{en ? 'or use email' : 'или через email'}</span></div>
     {awaitingCode ? <form onSubmit={verifyCode} className="form">
       <input inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="Код из письма" value={code} onChange={(event) => setCode(event.target.value.trim())} required />
       <button type="submit" disabled={busy || code.length < 6}>{busy ? 'Проверяем…' : 'Подтвердить почту'}</button>
@@ -88,6 +90,6 @@ export function Auth({ onGuest }: { onGuest: () => void }) {
       <button type="submit" disabled={busy}>{busy ? 'Подожди…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}</button>
     </form>}
     {message && <p className="message">{message}</p>}
-    <button type="button" className="guest-button" onClick={onGuest}>Продолжить без аккаунта →</button>
+    <button type="button" className="guest-button" onClick={onGuest}>{en ? 'Continue without an account →' : 'Продолжить без аккаунта →'}</button>
   </section>;
 }

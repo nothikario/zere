@@ -13,8 +13,12 @@ import { ArtReference, loadReferences } from './lib/references';
 import { loadMyProfile, Profile } from './lib/profiles';
 import { supabase } from './lib/supabase';
 import { Usage, visitAndGetUsage } from './lib/usage';
+import { LanguageSelect } from './components/LanguageSelect';
+import { useLanguage } from './lib/language';
 
 export default function App() {
+  const { language } = useLanguage();
+  const [languageChosen, setLanguageChosen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileChecked, setProfileChecked] = useState(false);
@@ -25,8 +29,9 @@ export default function App() {
   const [usage, setUsage] = useState<Usage>();
   useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); }); const { data } = supabase.auth.onAuthStateChange((_event, next) => { setSession(next); if (!next) setProfile(null); }); return () => data.subscription.unsubscribe(); }, []);
   useEffect(() => { if (!session) return; setGuest(false); setProfileChecked(false); Promise.all([loadMyProfile(session.user.id), loadReferences(), visitAndGetUsage()]).then(([found, items, currentUsage]) => { setProfile(found); setReferences(items); setUsage(currentUsage); setProfileChecked(true); }).catch(() => setProfileChecked(true)); }, [session]);
+  if (!languageChosen) return <LanguageSelect onContinue={() => setLanguageChosen(true)}/>;
   if (loading || (session && !profileChecked)) return <div className="splash">Refri<span>.</span></div>;
-  if (!session && !guest) return <div className="auth-shell"><div className="auth-intro"><div className="brand-static">Refri<span>.</span></div><h1>Твои идеи.<br/><em>Твои персонажи.</em></h1><p>Собирай референсы, создавай визуалы и находи других художников.</p></div><Auth onGuest={() => setGuest(true)} /></div>;
+  if (!session && !guest) return <div className="auth-shell"><div className="auth-intro"><div className="brand-static">Refri<span>.</span></div><h1>{language === 'en' ? <>Your ideas.<br/><em>Your characters.</em></> : <>Твои идеи.<br/><em>Твои персонажи.</em></>}</h1><p>{language === 'en' ? 'Collect references, create visuals, and discover other artists.' : 'Собирай референсы, создавай визуалы и находи других художников.'}</p></div><Auth onGuest={() => setGuest(true)} /></div>;
   if (guest) return <><Header page={page} onNavigate={setPage} onSignOut={() => { setGuest(false); setPage('home'); }}/>{page === 'create' ? <ReferenceForm isGuest onCreated={() => setPage('home')} /> : <Home onCreate={() => setPage('create')} onGallery={() => undefined} onDiscover={() => undefined} />}</>;
   if (!session) return null;
   if (!profile) return <ProfileSetup userId={session.user.id} onReady={setProfile}/>;

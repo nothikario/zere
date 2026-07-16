@@ -10,7 +10,14 @@ export type ArtReference = ReferenceDraft & {
 };
 
 export async function loadReferences() {
-  const { data, error } = await supabase.from('references').select('*').order('created_at', { ascending: false });
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('references')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
   if (error) throw error;
   return data as ArtReference[];
 }
@@ -24,9 +31,19 @@ export async function createReference(draft: ReferenceDraft) {
 }
 
 export async function deleteReference(reference: ArtReference) {
-  if (reference.image_path) await supabase.storage.from('reference-images').remove([reference.image_path]);
-  const { error } = await supabase.from('references').delete().eq('id', reference.id);
+  const { data, error } = await supabase
+    .from('references')
+    .delete()
+    .eq('id', reference.id)
+    .eq('user_id', reference.user_id)
+    .select('id');
   if (error) throw error;
+  if (!data?.length) throw new Error('Референс не удалён. Обнови страницу и попробуй снова.');
+  const paths = [reference.image_path, reference.final_art_path].filter((path): path is string => Boolean(path));
+  if (paths.length) {
+    const { error: storageError } = await supabase.storage.from('reference-images').remove(paths);
+    if (storageError) console.warn('Reference files could not be removed:', storageError.message);
+  }
 }
 
 export async function setReferenceHidden(referenceId: string, isHidden: boolean) {
