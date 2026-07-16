@@ -4,6 +4,7 @@ import { allHairOptions, emptyWizard, femaleHairOptions, guestDefaults, guestOpt
 import { hasGuestReference, markGuestReferenceCreated, saveGuestReference } from '../lib/usage';
 import { ChoiceStep } from './ChoiceStep';
 import { MultiCharacterStep } from './MultiCharacterStep';
+import { useLanguage } from '../lib/language';
 
 const globalKeys: WizardKey[] = ['peopleCount', 'theme', 'style', 'renderType'];
 const characterKeys: WizardKey[] = ['gender', 'hairColor', 'hair', 'face', 'emotion', 'build', 'outfit'];
@@ -20,6 +21,7 @@ function makeDraft(values: WizardValues, characters: WizardValues[]): ReferenceD
 }
 
 export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (reference?: ArtReference) => void; isGuest?: boolean }) {
+  const { language } = useLanguage();
   const [values, setValues] = useState<WizardValues>(() => fresh(isGuest));
   const [characters, setCharacters] = useState<WizardValues[]>(() => Array.from({ length: 4 }, () => fresh(isGuest)));
   const [stepIndex, setStepIndex] = useState(0); const [saved, setSaved] = useState<ArtReference | null>(null);
@@ -38,7 +40,7 @@ export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (refe
   function updateCharacter(index: number, key: WizardKey, value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, [key]: value } : item)); }
   function updateComment(index: number, value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, comments: { ...item.comments, gender: value } } : item)); }
   function updateLink(index: number, key: 'hairLink' | 'outfitLink', value: string) { setCharacters((all) => all.map((item, position) => position === index ? { ...item, [key]: value } : item)); }
-  async function ensureSaved() { if (saved) return saved; if (isGuest) { if (hasGuestReference()) throw new Error('Гостевой лимит — 1 референс.'); return { ...draft, id: 'guest', user_id: 'guest', image_path: null, final_art_path: null, created_at: new Date().toISOString() } as ArtReference; } const created = await createReference(draft); setSaved(created); return created; }
+  async function ensureSaved() { if (saved) return saved; if (isGuest) { if (hasGuestReference()) throw new Error(language === 'en' ? 'Guest mode allows only 1 reference per day.' : 'В гостевом режиме доступен только 1 референс в день.'); const created = { ...draft, id: 'guest', user_id: 'guest', image_path: null, final_art_path: null, is_hidden: false, created_at: new Date().toISOString() } as ArtReference; setSaved(created); return created; } const created = await createReference(draft); setSaved(created); return created; }
   useEffect(() => { if (isSummary && !saved) ensureSaved().catch((error) => setMessage(error instanceof Error ? error.message : 'Ошибка создания')); }, [isSummary]);
   async function generate() { setBusy('generate'); try { const reference = await ensureSaved(); if (isGuest) { setImageUrl(await generateGuestImage(reference.prompt)); markGuestReferenceCreated(); } else { const path = await generateReferenceImage(reference, styleExample); setSaved({ ...reference, image_path: path }); setImageUrl(getImageUrl(path)); } } catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка генерации'); } finally { setBusy(''); } }
   async function save() { setBusy('save'); try { const reference = await ensureSaved(); const completed = isGuest ? { ...reference, image_path: imageUrl || null } : reference; if (isGuest) saveGuestReference(completed); onCreated(completed); } catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка сохранения'); setBusy(''); } }

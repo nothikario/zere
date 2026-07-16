@@ -37,13 +37,28 @@ export async function buyCreationSlot() {
 
 const GUEST_REFERENCE_KEY = 'refri-guest-reference-used';
 const GUEST_REFERENCE_DATA_KEY = 'refri-guest-reference';
+const GUEST_REFERENCE_DATE_KEY = 'refri-guest-reference-date';
+
+function todayKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
+
+function clearExpiredGuestReference() {
+  if (localStorage.getItem(GUEST_REFERENCE_DATE_KEY) === todayKey()) return;
+  localStorage.removeItem(GUEST_REFERENCE_KEY);
+  localStorage.removeItem(GUEST_REFERENCE_DATA_KEY);
+  localStorage.removeItem(GUEST_REFERENCE_DATE_KEY);
+}
 
 export function hasGuestReference() {
+  clearExpiredGuestReference();
   return localStorage.getItem(GUEST_REFERENCE_KEY) === 'true';
 }
 
 export function markGuestReferenceCreated() {
   localStorage.setItem(GUEST_REFERENCE_KEY, 'true');
+  localStorage.setItem(GUEST_REFERENCE_DATE_KEY, todayKey());
 }
 
 export function saveGuestReference(reference: ArtReference) {
@@ -53,6 +68,7 @@ export function saveGuestReference(reference: ArtReference) {
 }
 
 export function loadGuestReference() {
+  clearExpiredGuestReference();
   const value = localStorage.getItem(GUEST_REFERENCE_DATA_KEY);
   if (!value) return null;
   try { return JSON.parse(value) as ArtReference; } catch { return null; }
