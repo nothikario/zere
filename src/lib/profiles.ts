@@ -21,7 +21,9 @@ export async function createProfile(userId: string, username: string, displayNam
 
 export async function searchProfiles(query: string) {
   const clean = query.toLowerCase().replace(/^@/, '');
-  const { data, error } = await supabase.from('profiles').select('*').ilike('username', `%${clean}%`).limit(12);
+  let request = supabase.from('profiles').select('*').order('display_name').limit(200);
+  if (clean) request = request.or(`username.ilike.%${clean}%,display_name.ilike.%${clean}%`);
+  const { data, error } = await request;
   if (error) throw error;
   return data as Profile[];
 }

@@ -85,6 +85,7 @@ const translations: [string, string][] = [
   ['Фон:', 'Background:'], ['Пример волос:', 'Hair example:'], ['Пример одежды:', 'Outfit example:'],
   ['Звёзды, временные создания или постоянное место.', 'Stars, temporary creation attempts, or permanent gallery space.'],
   ['Опиши фон', 'Describe the background'], ['Например: школьный двор на закате', 'For example: a school courtyard at sunset'],
+  ['Все зарегистрированные художники собраны здесь.', 'All registered artists are listed here.'], ['Никнейм или псевдоним', 'Username or display name'], ['Загружаем художников…', 'Loading artists…'],
 ];
 
 const orderedTranslations = [...translations].sort(([left], [right]) => right.length - left.length);
