@@ -79,10 +79,10 @@ const translations: [string, string][] = [
 const orderedTranslations = [...translations].sort(([left], [right]) => right.length - left.length);
 function translate(value: string) { return orderedTranslations.reduce((text, [ru, en]) => text.split(ru).join(en), value); }
 
-export function usePageTranslation() {
+export function usePageTranslation(enabled = true) {
   const { language } = useLanguage();
   useEffect(() => {
-    if (language !== 'en') return;
+    if (!enabled || language !== 'en') return;
     const apply = (root: Node) => {
       if (root.nodeType === Node.TEXT_NODE && root.nodeValue?.trim()) {
         const translated = translate(root.nodeValue);
@@ -96,15 +96,16 @@ export function usePageTranslation() {
         if (translated !== node.nodeValue) node.nodeValue = translated;
       }
       if (root instanceof Element) [root, ...root.querySelectorAll('*')].forEach((element) => {
-        ['placeholder', 'title', 'aria-label'].forEach((name) => { const value = element.getAttribute(name); if (value) element.setAttribute(name, translate(value)); });
+        ['placeholder', 'title', 'aria-label'].forEach((name) => { const value = element.getAttribute(name); const next = value ? translate(value) : ''; if (value && next !== value) element.setAttribute(name, next); });
       });
     };
     apply(document.body);
     const observer = new MutationObserver((items) => items.forEach((item) => {
+      if (item.type === 'attributes') apply(item.target);
       if (item.type === 'characterData') apply(item.target);
       item.addedNodes.forEach(apply);
     }));
-    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['placeholder', 'title', 'aria-label'], childList: true, characterData: true, subtree: true });
     return () => observer.disconnect();
-  }, [language]);
+  }, [enabled, language]);
 }

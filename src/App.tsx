@@ -19,8 +19,8 @@ import { usePageTranslation } from './lib/translatePage';
 
 export default function App() {
   const { language } = useLanguage();
-  usePageTranslation();
   const [languageChosen, setLanguageChosen] = useState(false);
+  usePageTranslation(languageChosen);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileChecked, setProfileChecked] = useState(false);
