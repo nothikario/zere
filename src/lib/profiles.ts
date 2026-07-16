@@ -7,6 +7,14 @@ export type Profile = {
   username_changed_at: string;
 };
 
+export type PublicProfileStats = { streak: number; daily_limit: number; references_count: number; references_limit: number };
+
+export async function loadPublicProfileStats(userId: string) {
+  const { data, error } = await supabase.rpc('get_public_profile_stats', { target_user: userId });
+  if (error) throw error;
+  return (data?.[0] ?? null) as PublicProfileStats | null;
+}
+
 export async function loadMyProfile(userId: string) {
   const { data, error } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
   if (error) throw error;
