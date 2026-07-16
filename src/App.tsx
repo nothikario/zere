@@ -15,9 +15,11 @@ import { supabase } from './lib/supabase';
 import { Usage, visitAndGetUsage } from './lib/usage';
 import { LanguageSelect } from './components/LanguageSelect';
 import { useLanguage } from './lib/language';
+import { usePageTranslation } from './lib/translatePage';
 
 export default function App() {
   const { language } = useLanguage();
+  usePageTranslation();
   const [languageChosen, setLanguageChosen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
