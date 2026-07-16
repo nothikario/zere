@@ -36,8 +36,9 @@ export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (refe
   const active = current.characterIndex === undefined ? values : characters[current.characterIndex];
   const draft = useMemo(() => makeDraft(values, characters), [values, characters]);
   const friendlyError = (error: unknown, fallback: string) => {
-    const text = error instanceof Error ? error.message : '';
-    if (text.toLowerCase().includes('лимит')) return language === 'en' ? "Today's reference creation limit has been reached." : 'Количество созданных референсов на сегодня исчерпано.';
+    const text = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String(error.message) : '';
+    const normalized = text.toLowerCase();
+    if (normalized.includes('лимит') || normalized.includes('daily limit')) return language === 'en' ? "Today's reference creation limit has been reached." : 'Количество созданных референсов на сегодня исчерпано.';
     return text || fallback;
   };
 
