@@ -56,11 +56,11 @@ async function fileToBase64(file: File) {
   return url.split(',')[1];
 }
 
-export async function generateReferenceImage(reference: ArtReference, styleExample?: File) {
+export async function generateReferenceImage(reference: ArtReference, styleExample?: File, referenceUrls: string[] = []) {
   const variationId = crypto.randomUUID();
   const generationPrompt = `${reference.prompt}\nCreate a fresh alternative image with a noticeably different composition, camera angle, and small visual details while preserving the requested character. Variation ID: ${variationId}.`;
   const { data, error } = await supabase.functions.invoke('ai', {
-    body: { mode: 'image', prompt: generationPrompt, styleImageBase64: styleExample ? await fileToBase64(styleExample) : undefined, styleImageMimeType: styleExample?.type },
+    body: { mode: 'image', prompt: generationPrompt, styleImageBase64: styleExample ? await fileToBase64(styleExample) : undefined, styleImageMimeType: styleExample?.type, referenceUrls },
   });
   if (error || !data?.imageBase64) throw new Error(data?.error ?? error?.message ?? 'Не удалось создать изображение');
   const session = await supabase.auth.getSession();
@@ -87,8 +87,8 @@ export async function generateReferenceImage(reference: ArtReference, styleExamp
   return path;
 }
 
-export async function generateGuestImage(prompt: string) {
-  const { data, error } = await supabase.functions.invoke('ai', { body: { mode: 'image', prompt } });
+export async function generateGuestImage(prompt: string, referenceUrls: string[] = []) {
+  const { data, error } = await supabase.functions.invoke('ai', { body: { mode: 'image', prompt, referenceUrls } });
   if (error || !data?.imageBase64) throw new Error(data?.error ?? error?.message ?? 'Не удалось создать изображение');
   return `data:${data.mimeType ?? 'image/png'};base64,${data.imageBase64}`;
 }

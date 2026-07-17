@@ -11,9 +11,14 @@ export function MultiCharacterStep({ character, theme, index, onChange, onLink, 
       const options = key === 'hair' ? (character.gender === 'Парень' ? maleHairOptions : character.gender === 'Девушка' ? femaleHairOptions : allHairOptions) : key === 'outfit' ? outfitOptionsFor(theme) : config.options;
       const custom = Boolean(character[key]) && !options.includes(character[key]);
       const linkKey = config.link === 'hairLink' || config.link === 'outfitLink' ? config.link : undefined;
+      const customValue = linkKey && character[linkKey] ? character[linkKey] : custom ? character[key] : '';
+      const changeCustom = (value: string) => {
+        const isLink = /^https?:\/\//i.test(value.trim());
+        if (linkKey) onLink(linkKey, isLink ? value.trim() : '');
+        onChange(key, isLink ? 'Референс по ссылке' : value);
+      };
       return <section className="appearance-group" key={key}><h2>{config.title}</h2><div className="appearance-options">{options.map((option) => <button type="button" key={option} className={character[key] === option ? 'appearance-option selected' : 'appearance-option'} onClick={() => onChange(key, option)}>{option}<i>{character[key] === option ? '✓' : '○'}</i></button>)}</div>
-        <label className="appearance-custom"><span>Свой вариант</span><input name={`character-${index + 1}-${key}-custom`} value={custom ? character[key] : ''} onChange={(event) => onChange(key, event.target.value)} placeholder={config.customPlaceholder}/></label>
-        {linkKey && <label className="appearance-custom"><span>Ссылка на пример</span><input name={`character-${index + 1}-${linkKey}`} type="url" value={character[linkKey]} onChange={(event) => onLink(linkKey, event.target.value)} placeholder="https://…"/></label>}
+        <label className="appearance-custom"><span>Свой вариант</span><input name={`character-${index + 1}-${key}-custom`} value={customValue} onChange={(event) => changeCustom(event.target.value)} placeholder={linkKey ? 'Опиши вариант или вставь ссылку https://…' : config.customPlaceholder}/>{linkKey && <small>Можно вставить ссылку на картинку, например из Pinterest</small>}</label>
         {key === 'outfit' && character.outfit === 'Школьная форма' && <div className="appearance-group"><h2>Брюки или юбка?</h2><div className="appearance-options">{['Брюки', 'Юбка'].map((option) => <button type="button" key={option} className={character.bottom === option ? 'appearance-option selected' : 'appearance-option'} onClick={() => onChange('bottom', option)}>{option}<i>{character.bottom === option ? '✓' : '○'}</i></button>)}</div></div>}
       </section>;
     })}</div>
