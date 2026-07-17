@@ -83,7 +83,7 @@ const translations: [string, string][] = [
   ['Королевский наряд', 'Royal outfit'], ['Крестьянская одежда', 'Peasant clothing'], ['Мантия мага', 'Mage robe'], ['Зачарованные доспехи', 'Enchanted armor'], ['Одежда алхимика', 'Alchemist outfit'],
   ['Неоновая куртка', 'Neon jacket'], ['Киберброня', 'Cyber armor'], ['Походная одежда', 'Hiking clothes'], ['Одежда исследователя', 'Explorer outfit'], ['Лесной плащ', 'Forest cloak'],
   ['Фон:', 'Background:'], ['Пример волос:', 'Hair example:'], ['Пример одежды:', 'Outfit example:'],
-  ['Звёзды, временные создания или постоянное место.', 'Stars, temporary creation attempts, or permanent gallery space.'],
+  ['Только 1–2 звезды или +1 создание референса на 24 часа.', 'Only 1–2 stars or +1 reference creation for 24 hours.'],
   ['Опиши фон', 'Describe the background'], ['Например: школьный двор на закате', 'For example: a school courtyard at sunset'],
   ['Все зарегистрированные художники собраны здесь.', 'All registered artists are listed here.'], ['Никнейм или псевдоним', 'Username or display name'], ['Загружаем художников…', 'Loading artists…'],
   ['В день:', 'Per day:'],
