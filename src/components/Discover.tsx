@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadPublicProfileStats, Profile, PublicProfileStats, searchProfiles } from '../lib/profiles';
 import { ArtReference, getImageUrl, loadPublicReferences } from '../lib/references';
+import { ImageLightbox } from './ImageLightbox';
 
 export function Discover() {
   const [query, setQuery] = useState('');
@@ -21,5 +22,6 @@ export function Discover() {
 
 function PublicImage({ path, title }: { path: string | null; title: string }) {
   const url = path ? getImageUrl(path) : '';
-  return <div className="public-image">{url ? <img src={url} alt={title}/> : <span>✦</span>}</div>;
+  const [open, setOpen] = useState(false);
+  return <><div className="public-image" onClick={() => url && setOpen(true)}>{url ? <img src={url} alt={title}/> : <span>✦</span>}</div>{open && <ImageLightbox src={url} alt={title} onClose={() => setOpen(false)}/>}</>;
 }

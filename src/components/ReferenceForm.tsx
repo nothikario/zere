@@ -6,7 +6,7 @@ import { ChoiceStep } from './ChoiceStep';
 import { MultiCharacterStep } from './MultiCharacterStep';
 import { useLanguage } from '../lib/language';
 
-const globalKeys: WizardKey[] = ['peopleCount', 'theme', 'style', 'renderType'];
+const globalKeys: WizardKey[] = ['peopleCount', 'theme', 'style', 'renderType', 'framing'];
 const characterKeys: WizardKey[] = ['gender', 'hairColor', 'hair', 'face', 'emotion', 'build', 'outfit'];
 type FlowItem = { key: WizardKey; characterIndex?: number; multi?: boolean };
 const fresh = (guest: boolean) => { const source = guest ? guestDefaults : emptyWizard; return { ...source, comments: { ...source.comments } }; };
@@ -17,7 +17,7 @@ function makeDraft(values: WizardValues, characters: WizardValues[]): ReferenceD
   const pose = `Поза: ${values.pose}. Взаимодействие: ${values.comments.pose}. ${values.poseLink ? `Пример позы: ${values.poseLink}.` : ''}`;
   const first = characters[0];
   const background = `Фон: ${values.background}. ${values.comments.background}`;
-  return { title: `${values.theme} — ${count} персонаж${count === 1 ? '' : 'а'}`, theme: values.theme, pose: values.pose, hair: first.hair, build: first.build, outfit: `${first.outfit}${first.outfit === 'Школьная форма' ? `, ${first.bottom}` : ''}`, details: `${people} ${pose} ${background}`, prompt: `${count} full-body characters, ${values.theme}, ${values.style} style, ${values.renderType}. ${people} ${pose} ${background} Clear composition.`, art_style: values.style, render_type: values.renderType, people_count: count };
+  return { title: `${values.theme} — ${count} персонаж${count === 1 ? '' : 'а'}`, theme: values.theme, pose: values.pose, hair: first.hair, build: first.build, outfit: `${first.outfit}${first.outfit === 'Школьная форма' ? `, ${first.bottom}` : ''}`, details: `${people} Кадр: ${values.framing}. ${values.comments.framing} ${pose} ${background}`, prompt: `${count} characters, framing: ${values.framing}, ${values.comments.framing}, ${values.theme}, ${values.style} style, ${values.renderType}. ${people} ${pose} ${background} Clear composition.`, art_style: values.style, render_type: values.renderType, people_count: count };
 }
 
 export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (reference?: ArtReference) => void; isGuest?: boolean }) {

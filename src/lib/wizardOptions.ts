@@ -1,4 +1,4 @@
-export type WizardKey = 'peopleCount' | 'theme' | 'style' | 'renderType' | 'gender' | 'hairColor' | 'hair' | 'face' | 'emotion' | 'build' | 'outfit' | 'bottom' | 'background' | 'pose';
+export type WizardKey = 'peopleCount' | 'theme' | 'style' | 'renderType' | 'framing' | 'gender' | 'hairColor' | 'hair' | 'face' | 'emotion' | 'build' | 'outfit' | 'bottom' | 'background' | 'pose';
 
 export type WizardValues = Record<WizardKey, string> & {
   hairLink: string;
@@ -19,13 +19,13 @@ export type WizardStep = {
 };
 
 export const guestDefaults: WizardValues = {
-  peopleCount: '1', theme: 'Повседневность', style: 'Манга', renderType: 'Скетч', gender: '', hairColor: '', hair: 'Хвост', face: 'Обычные', emotion: 'Спокойствие',
+  peopleCount: '1', theme: 'Повседневность', style: 'Манга', renderType: 'Скетч', framing: 'В полный рост', gender: '', hairColor: '', hair: 'Хвост', face: 'Обычные', emotion: 'Спокойствие',
   build: 'Среднее', outfit: 'Уличный стиль', bottom: 'Брюки', background: 'Без фона', pose: 'Стоит прямо', hairLink: '', outfitLink: '', poseLink: '',
-  comments: { peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '' },
+  comments: { peopleCount: '', theme: '', style: '', renderType: '', framing: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '' },
 };
 
 export const guestOptions: Partial<Record<WizardKey, string[]>> = {
-  peopleCount: ['1'], theme: ['Повседневность'], emotion: ['Спокойствие'], face: ['Обычные'], build: ['Среднее'], background: ['Без фона'], pose: ['Стоит прямо'],
+  peopleCount: ['1'], theme: ['Повседневность'], framing: ['В полный рост'], emotion: ['Спокойствие'], face: ['Обычные'], build: ['Среднее'], background: ['Без фона'], pose: ['Стоит прямо'],
 };
 
 export const maleHairOptions = ['Короткая стрижка', 'Андеркат', 'Квифф', 'Цезарь', 'Средние волосы', 'Длинные волосы'];
@@ -47,6 +47,7 @@ export const steps: WizardStep[] = [
   { key: 'theme', eyebrow: 'ШАГ 1', title: 'Выбери тематику', hint: 'С чего начнётся история персонажа?', options: ['Магия', 'Природа', 'Киберпанк', 'Средневековье', 'Космос', 'Повседневность'], customPlaceholder: 'Напиши сюда свою тематику', commentPlaceholder: 'Например: ночная атмосфера, вокруг светятся магические растения' },
   { key: 'style', eyebrow: 'ШАГ 2', title: 'Выбери стиль', hint: 'Как должен выглядеть будущий рисунок?', options: ['Манга', 'Комикс', 'Реализм', 'Мультфильм', 'Аниме', 'Концепт-арт'], customPlaceholder: 'Напиши свой стиль', commentPlaceholder: 'Например: мягкие линии и акварельные цвета' },
   { key: 'renderType', eyebrow: 'ШАГ 3', title: 'Как будет нарисовано?', hint: 'Это влияет на награду за готовую работу.', options: ['Скетч', 'Покрас', 'Полноценный арт'], customPlaceholder: 'Опиши уровень готовности', commentPlaceholder: 'Например: чистый лайн с простыми тенями' },
+  { key: 'framing', eyebrow: 'ШАГ 4', title: 'Какой будет кадр?', hint: 'Выбери, какая часть персонажа попадёт в арт.', options: ['В полный рост', 'По пояс', 'По плечи', 'Крупно голова'], customPlaceholder: 'Опиши свой вариант кадра', commentPlaceholder: 'Например: видны голова, плечи и часть груди' },
   { key: 'gender', eyebrow: 'ШАГ 2', title: 'Выбери персонажа', hint: 'Это поможет точнее подобрать образ и телосложение.', options: ['Девушка', 'Парень', 'Андрогинный образ', 'Не указывать'], customPlaceholder: 'Опиши свой вариант', commentPlaceholder: 'Например: молодой персонаж с немного андрогинной внешностью' },
   { key: 'hairColor', eyebrow: 'ПЕРСОНАЖ', title: 'Цвет волос', hint: 'Выбери цвет или напиши свой.', options: ['Чёрные', 'Каштановые', 'Русые', 'Светлые', 'Рыжие', 'Цветные'], customPlaceholder: 'Например: тёмно-синие', commentPlaceholder: 'Можно добавить пряди или градиент' },
   { key: 'hair', eyebrow: 'ШАГ 3', title: 'Какая будет причёска?', hint: 'Выбери основу или предложи свою.', options: ['Каскад', 'Косички', 'Каре', 'Длинные волны', 'Высокий хвост', 'Короткая стрижка'], customPlaceholder: 'Опиши причёску своими словами', commentPlaceholder: 'Например: тёмно-синие волосы, две тонкие пряди падают на лицо', link: 'hairLink' },
@@ -60,7 +61,7 @@ export const steps: WizardStep[] = [
 ];
 
 export const emptyWizard: WizardValues = {
-  peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '',
+  peopleCount: '', theme: '', style: '', renderType: '', framing: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '',
   hairLink: '', outfitLink: '', poseLink: '',
-  comments: { peopleCount: '', theme: '', style: '', renderType: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '' },
+  comments: { peopleCount: '', theme: '', style: '', renderType: '', framing: '', gender: '', hairColor: '', hair: '', face: '', emotion: '', build: '', outfit: '', bottom: '', background: '', pose: '' },
 };
