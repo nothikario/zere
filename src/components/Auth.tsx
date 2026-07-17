@@ -81,12 +81,12 @@ export function Auth({ onGuest }: { onGuest: () => void }) {
     <button type="button" className="google-auth-button" disabled={busy} onClick={continueWithGoogle}><span className="google-mark">G</span>{en ? 'Continue with Google' : 'Продолжить через Google'}</button>
     <div className="auth-divider"><span>{en ? 'or use email' : 'или через email'}</span></div>
     {awaitingCode ? <form onSubmit={verifyCode} className="form">
-      <input inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="Код из письма" value={code} onChange={(event) => setCode(event.target.value.trim())} required />
+      <input name="verification-code" inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="Код из письма" value={code} onChange={(event) => setCode(event.target.value.trim())} required />
       <button type="submit" disabled={busy || code.length < 6}>{busy ? 'Проверяем…' : 'Подтвердить почту'}</button>
       <button type="button" className="ghost" onClick={() => setAwaitingCode(false)}>Изменить email</button>
     </form> : <form onSubmit={handleSubmit} className="form">
-      <input type="email" placeholder="Твой email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-      <input type="password" placeholder="Пароль — минимум 6 символов" value={password} onChange={(event) => setPassword(event.target.value)} minLength={6} required />
+      <input name="email" type="email" autoComplete="email" placeholder="Твой email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+      <input name="password" type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} placeholder="Пароль — минимум 6 символов" value={password} onChange={(event) => setPassword(event.target.value)} minLength={6} required />
       <button type="submit" disabled={busy}>{busy ? 'Подожди…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}</button>
     </form>}
     {message && <p className="message">{message}</p>}

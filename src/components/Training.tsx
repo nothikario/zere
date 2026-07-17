@@ -38,7 +38,7 @@ export function Training() {
     <p className="lead">{en ? 'Choose a question or ask the AI tutor anything about the app.' : 'Выбери вопрос или спроси AI-помощника о приложении.'}</p>
     <div className="training-layout"><aside className="training-questions"><h2>{en ? 'Popular questions' : 'Популярные вопросы'}</h2>{questions[language].map((item) => <button key={item} disabled={busy} onClick={() => void ask(item)}>{item}<span>→</span></button>)}</aside>
       <section className="training-chat"><div className="training-messages">{messages.length ? messages.map((message, index) => <div key={`${message.role}-${index}`} className={`training-message ${message.role}`}>{message.text}</div>) : <div className="training-empty"><span>✦</span><p>{en ? 'Your AI tutor is ready to help.' : 'AI-помощник готов помочь.'}</p></div>}{busy && <div className="training-message assistant">{en ? 'Thinking…' : 'Думаю…'}</div>}</div>
-        <form className="training-form" onSubmit={submit}><input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={en ? 'Ask about Refri…' : 'Спроси о Refri…'} maxLength={500}/><button disabled={busy || !question.trim()}>{en ? 'Ask' : 'Спросить'}</button></form>{error && <p className="message">{error}</p>}
+        <form className="training-form" onSubmit={submit}><input name="training-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={en ? 'Ask about Refri…' : 'Спроси о Refri…'} maxLength={500}/><button disabled={busy || !question.trim()}>{en ? 'Ask' : 'Спросить'}</button></form>{error && <p className="message">{error}</p>}
       </section></div>
   </main>;
 }

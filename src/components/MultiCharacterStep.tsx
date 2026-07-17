@@ -12,11 +12,11 @@ export function MultiCharacterStep({ character, theme, index, onChange, onLink, 
       const custom = Boolean(character[key]) && !options.includes(character[key]);
       const linkKey = config.link === 'hairLink' || config.link === 'outfitLink' ? config.link : undefined;
       return <section className="appearance-group" key={key}><h2>{config.title}</h2><div className="appearance-options">{options.map((option) => <button type="button" key={option} className={character[key] === option ? 'appearance-option selected' : 'appearance-option'} onClick={() => onChange(key, option)}>{option}<i>{character[key] === option ? '✓' : '○'}</i></button>)}</div>
-        <label className="appearance-custom"><span>Свой вариант</span><input value={custom ? character[key] : ''} onChange={(event) => onChange(key, event.target.value)} placeholder={config.customPlaceholder}/></label>
-        {linkKey && <label className="appearance-custom"><span>Ссылка на пример</span><input type="url" value={character[linkKey]} onChange={(event) => onLink(linkKey, event.target.value)} placeholder="https://…"/></label>}
+        <label className="appearance-custom"><span>Свой вариант</span><input name={`character-${index + 1}-${key}-custom`} value={custom ? character[key] : ''} onChange={(event) => onChange(key, event.target.value)} placeholder={config.customPlaceholder}/></label>
+        {linkKey && <label className="appearance-custom"><span>Ссылка на пример</span><input name={`character-${index + 1}-${linkKey}`} type="url" value={character[linkKey]} onChange={(event) => onLink(linkKey, event.target.value)} placeholder="https://…"/></label>}
         {key === 'outfit' && character.outfit === 'Школьная форма' && <div className="appearance-group"><h2>Брюки или юбка?</h2><div className="appearance-options">{['Брюки', 'Юбка'].map((option) => <button type="button" key={option} className={character.bottom === option ? 'appearance-option selected' : 'appearance-option'} onClick={() => onChange('bottom', option)}>{option}<i>{character.bottom === option ? '✓' : '○'}</i></button>)}</div></div>}
       </section>;
     })}</div>
-    <label className="character-comment"><span>Дополнительное описание персонажа</span><textarea value={character.comments.gender} onChange={(event) => onComment(event.target.value)} placeholder="Особые детали, аксессуары, характер…"/></label>
+    <label className="character-comment"><span>Дополнительное описание персонажа</span><textarea name={`character-${index + 1}-description`} value={character.comments.gender} onChange={(event) => onComment(event.target.value)} placeholder="Особые детали, аксессуары, характер…"/></label>
   </section>;
 }

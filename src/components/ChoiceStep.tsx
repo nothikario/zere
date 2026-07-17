@@ -31,9 +31,9 @@ export function ChoiceStep({ step, value, comment, link, onValue, onComment, onL
     <h1>{step.title}</h1>
     <p className="lead">{step.hint}</p>
     <div className="choice-grid">{step.options.map((option) => <button type="button" key={option} className={`${value === option ? 'choice selected' : 'choice'}${allowedOptions && !allowedOptions.includes(option) ? ' locked' : ''}`} onClick={() => choose(option)}><span>{option}</span><i>{value === option ? '✓' : allowedOptions && !allowedOptions.includes(option) ? '×' : '○'}</i></button>)}</div>
-    {!restricted && <>{!hideCustom && <label className="custom-choice"><span>Свой вариант</span><input value={isCustom ? value : ''} onChange={(event) => onValue(event.target.value)} placeholder={step.customPlaceholder} /></label>}
-    {step.link && <label className="custom-choice"><span>Ссылка на пример</span><input type="url" value={link} onChange={(event) => onLink(event.target.value)} placeholder="https://…" /></label>}
-    <label className="custom-choice comment-choice"><span>Комментарий к выбору</span><textarea value={comment} onChange={(event) => onComment(event.target.value)} placeholder={step.commentPlaceholder} /></label></>}
+    {!restricted && <>{!hideCustom && <label className="custom-choice"><span>Свой вариант</span><input name={`${step.key}-custom`} value={isCustom ? value : ''} onChange={(event) => onValue(event.target.value)} placeholder={step.customPlaceholder} /></label>}
+    {step.link && <label className="custom-choice"><span>Ссылка на пример</span><input name={`${step.key}-link`} type="url" value={link} onChange={(event) => onLink(event.target.value)} placeholder="https://…" /></label>}
+    <label className="custom-choice comment-choice"><span>Комментарий к выбору</span><textarea name={`${step.key}-comment`} value={comment} onChange={(event) => onComment(event.target.value)} placeholder={step.commentPlaceholder} /></label></>}
     {restricted && <p className="guest-notice">{language === 'en' ? 'Custom options and comments are unavailable in guest mode.' : 'В гостевом режиме свои варианты и комментарии недоступны.'}</p>}
     {blockedMessage && <p className="message">{blockedMessage}</p>}
   </section>;

@@ -52,6 +52,7 @@ export function Entries({ userEmail }: { userEmail: string }) {
 
       <form onSubmit={add} className="form-row">
         <input
+          name="entry-title"
           placeholder="что добавить…"
           value={title}
           onChange={(e) => setTitle(e.target.value)}

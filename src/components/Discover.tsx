@@ -11,7 +11,7 @@ export function Discover() {
   async function search(event: React.FormEvent) { event.preventDefault(); setLoading(true); setPeople(await searchProfiles(query)); setSelected(null); setLoading(false); }
   async function open(profile: Profile) { setSelected(profile); const [items, profileStats] = await Promise.all([loadPublicReferences(profile.user_id), loadPublicProfileStats(profile.user_id)]); setReferences(items); setStats(profileStats); }
   return <main className="page discover-page"><div className="eyebrow">СООБЩЕСТВО REFRI</div><h1>Найди <em>художника</em></h1><p className="lead">Все зарегистрированные художники собраны здесь.</p>
-    <form className="people-search" onSubmit={search}><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Никнейм или псевдоним"/><button>Найти</button></form>
+    <form className="people-search" onSubmit={search}><input name="people-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Никнейм или псевдоним"/><button>Найти</button></form>
     {selected ? <SelectedProfile profile={selected} references={references} stats={stats} onBack={() => setSelected(null)}/>
       : loading ? <p className="empty">Загружаем художников…</p> : <div className="people-list">{people.map((person) => <button key={person.user_id} onClick={() => open(person)}><ProfileAvatar profile={person}/><span><b>{person.display_name}</b><small>@{person.username}</small></span><i>→</i></button>)}</div>}
   </main>;
