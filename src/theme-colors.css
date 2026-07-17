@@ -1,0 +1,102 @@
+:root {
+  color: var(--ink);
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  color: var(--ink);
+}
+
+:root[data-theme="ruby"] {
+  color-scheme: dark;
+  --ruby-muted: #c8bdb7;
+  --ruby-soft: #302b29;
+  --ruby-selected: #3b2927;
+  --ruby-control: #292524;
+  --ruby-accent-ink: #211817;
+}
+
+:root[data-theme="ruby"] :is(input, textarea, select) {
+  border-color: var(--line);
+  background: var(--ruby-control);
+  color: var(--ink);
+}
+
+:root[data-theme="ruby"] :is(input, textarea)::placeholder {
+  color: #9f938d;
+}
+
+:root[data-theme="ruby"] :is(
+  .lead, small, .account, .language-copy p, .auth-intro p,
+  .auth-caption, .home-welcome > p, .profile-setup .card > p,
+  .public-profile p, .public-grid p, .shop-item p, .daily-gift p,
+  .card-body dt, .docs-hint, .training-empty, .wizard-navigation > span,
+  .appearance-custom span, .custom-choice > span, .auth-divider
+) {
+  color: var(--ruby-muted);
+}
+
+:root[data-theme="ruby"] :is(
+  .prompt-preview, .choice.selected, .appearance-option.selected,
+  .training-message.assistant, .result-prompt, .drawing-description,
+  .guest-notice, .stars-balance, .hide-reference, .nav-button.active
+) {
+  background: var(--ruby-selected);
+  color: var(--ink);
+}
+
+:root[data-theme="ruby"] :is(
+  .fields input, .username-input, .google-auth-button,
+  .appearance-option, .drawing-description details p,
+  .free-generation a, .character-fields select, .character-comment textarea
+) {
+  border-color: var(--line);
+  background: var(--ruby-control);
+  color: var(--ink);
+}
+
+:root[data-theme="ruby"] :is(
+  .artwork, .public-image, .result-image, .avatar
+) {
+  background: var(--ruby-soft);
+  color: var(--sage);
+}
+
+:root[data-theme="ruby"] .tags span {
+  background: var(--ruby-selected);
+  color: #ffd0cc;
+}
+
+:root[data-theme="ruby"] .card-body dl div {
+  border-color: var(--line);
+}
+
+:root[data-theme="ruby"] :is(
+  .primary, .generate, .next-button, .people-search button,
+  .training-form button, .free-generation button,
+  .shop-item button, .daily-gift button, .form button
+) {
+  background: var(--sage);
+  color: var(--ruby-accent-ink);
+}
+
+:root[data-theme="ruby"] :is(.user-pill, .generate-large, .training-message.user) {
+  background: #a9403b;
+  color: #fff;
+}
+
+:root[data-theme="ruby"] :is(.message, .sign-out) {
+  color: #ff918a !important;
+}
+
+:root[data-theme="ruby"] :is(.ghost, .back-button, .upload-art) {
+  color: var(--ruby-muted) !important;
+}
+
+:root[data-theme="ruby"] :is(button, input, textarea, select):focus-visible {
+  outline: 3px solid #ff918a;
+  outline-offset: 2px;
+}
