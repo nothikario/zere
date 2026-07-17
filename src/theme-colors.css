@@ -100,3 +100,57 @@ select {
   outline: 3px solid #ff918a;
   outline-offset: 2px;
 }
+
+:root[data-theme="ocean"] {
+  --theme-soft: #e7f0f6;
+  --theme-soft-strong: #d8e7f1;
+}
+
+:root[data-theme="violet"] {
+  --theme-soft: #f0e7f2;
+  --theme-soft-strong: #e6d8e9;
+}
+
+:root:is([data-theme="ocean"], [data-theme="violet"]) :is(
+  .brand span, .brand-static span, .splash span
+) {
+  color: var(--sage);
+}
+
+:root:is([data-theme="ocean"], [data-theme="violet"]) :is(
+  .nav-button.active, .choice.selected, .appearance-option.selected,
+  .prompt-preview, .training-message.assistant, .result-prompt,
+  .drawing-description, .guest-notice, .stars-balance, .hide-reference
+) {
+  border-color: var(--sage);
+  background: var(--theme-soft);
+  color: var(--ink);
+}
+
+:root:is([data-theme="ocean"], [data-theme="violet"]) :is(
+  .tags span, .drawing-text-button
+) {
+  border-color: var(--sage);
+  background: var(--theme-soft-strong);
+  color: var(--sage);
+}
+
+:root:is([data-theme="ocean"], [data-theme="violet"]) :is(
+  .generate, .generate-large, .user-pill, .training-message.user
+) {
+  background: var(--sage);
+  color: #fff;
+}
+
+:root:is([data-theme="ocean"], [data-theme="violet"]) :is(
+  .choice:hover, .home-actions button:hover, .google-auth-button:hover
+) {
+  border-color: var(--sage);
+}
+
+:root:is([data-theme="ocean"], [data-theme="violet"]) :is(
+  button, input, textarea, select
+):focus-visible {
+  outline: 3px solid var(--sage);
+  outline-offset: 2px;
+}
