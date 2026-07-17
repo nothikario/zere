@@ -17,7 +17,7 @@ import { ArtReference, loadReferences } from './lib/references';
 import { supabase } from './lib/supabase';
 import { applyTheme } from './lib/themes';
 import { usePageTranslation } from './lib/translatePage';
-import { loadGuestReference, Usage, visitAndGetUsage } from './lib/usage';
+import { clearGuestSession, loadGuestReference, Usage, visitAndGetUsage } from './lib/usage';
 
 export default function App() {
   const { language } = useLanguage();
@@ -33,7 +33,7 @@ export default function App() {
   if (!languageChosen) return <LanguageSelect onContinue={() => setLanguageChosen(true)}/>;
   if (loading || (session && !profileChecked)) return <div className="splash">Refri<span>.</span></div>;
   if (!session && !guest) return <div className="auth-shell"><div className="auth-intro"><div className="brand-static">Refri<span>.</span></div><h1>{language === 'en' ? <>Your ideas.<br/><em>Your characters.</em></> : <>Твои идеи.<br/><em>Твои персонажи.</em></>}</h1><p>{language === 'en' ? 'Collect references, create visuals, and discover other artists.' : 'Собирай референсы, создавай визуалы и находи других художников.'}</p></div><Auth onGuest={() => setGuest(true)}/></div>;
-  if (guest) return <GuestApp page={page} setPage={setPage} references={guestReferences} setReferences={setGuestReferences} onExit={() => { setGuest(false); setLanguageChosen(false); setPage('home'); }}/>;
+  if (guest) return <GuestApp page={page} setPage={setPage} references={guestReferences} setReferences={setGuestReferences} onExit={() => { clearGuestSession(); setGuestReferences([]); setGuest(false); setLanguageChosen(false); setPage('home'); }}/>;
   if (!session) return null;
   if (!profile) return <ProfileSetup userId={session.user.id} onReady={setProfile}/>;
   const refreshUsage = async () => setUsage(await visitAndGetUsage());
