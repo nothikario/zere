@@ -21,9 +21,9 @@ function makeDraft(values: WizardValues, characters: WizardValues[]): ReferenceD
   return { title: `${values.theme} — ${count} персонаж${count === 1 ? '' : 'а'}`, theme: values.theme, pose: values.pose, hair: first.hair, build: first.build, outfit: `${first.outfit}${first.outfit === 'Школьная форма' ? `, ${first.bottom}` : ''}`, details: `${people} Кадр: ${values.framing}. ${values.comments.framing} ${pose} ${background}`, prompt: `${count} characters, framing: ${values.framing}, ${values.comments.framing}, ${values.theme}, ${values.style} style, ${values.renderType}. ${people} ${pose} ${background} Clear composition.`, art_style: values.style, render_type: values.renderType, people_count: count };
 }
 
-export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (reference?: ArtReference) => void; isGuest?: boolean }) {
+export function ReferenceForm({ onCreated, isGuest = false, progressOwner = 'guest' }: { onCreated: (reference?: ArtReference) => void; isGuest?: boolean; progressOwner?: string }) {
   const { language } = useLanguage();
-  const restored = useMemo(() => loadWizardProgress(isGuest), [isGuest]);
+  const restored = useMemo(() => loadWizardProgress(progressOwner), [progressOwner]);
   const [values, setValues] = useState<WizardValues>(() => restored?.values ?? fresh(isGuest));
   const [characters, setCharacters] = useState<WizardValues[]>(() => restored?.characters ?? Array.from({ length: 4 }, () => fresh(isGuest)));
   const [stepIndex, setStepIndex] = useState(restored?.stepIndex ?? 0); const [saved, setSaved] = useState<ArtReference | null>(null);
@@ -37,7 +37,7 @@ export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (refe
   const step = steps.find(({ key }) => key === current.key) ?? steps[0];
   const active = current.characterIndex === undefined ? values : characters[current.characterIndex];
   const draft = useMemo(() => makeDraft(values, characters), [values, characters]);
-  useEffect(() => { saveWizardProgress(isGuest, { values, characters, stepIndex }); }, [isGuest, values, characters, stepIndex]);
+  useEffect(() => { saveWizardProgress(progressOwner, { values, characters, stepIndex }); }, [progressOwner, values, characters, stepIndex]);
   const friendlyError = (error: unknown, fallback: string) => {
     const text = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String(error.message) : '';
     const normalized = text.toLowerCase();
@@ -53,7 +53,7 @@ export function ReferenceForm({ onCreated, isGuest = false }: { onCreated: (refe
   useEffect(() => { if (isSummary && !saved) ensureSaved().catch((error) => setMessage(friendlyError(error, 'Ошибка создания'))); }, [isSummary]);
   const referenceLinks = [...characters.slice(0, count).flatMap(({ hairLink, outfitLink }) => [hairLink, outfitLink]), values.poseLink].filter(Boolean);
   async function generate() { setBusy('generate'); try { const reference = await ensureSaved(); if (isGuest) { setImageUrl(await generateGuestImage(reference.prompt, referenceLinks)); markGuestReferenceCreated(); } else { const path = await generateReferenceImage(reference, styleExample, referenceLinks); setSaved({ ...reference, image_path: path }); setImageUrl(getImageUrl(path, Date.now())); } } catch (error) { setMessage(friendlyError(error, 'Ошибка генерации')); } finally { setBusy(''); } }
-  async function save() { setBusy('save'); try { const reference = await ensureSaved(); const completed = isGuest ? { ...reference, image_path: imageUrl || null } : reference; if (isGuest) saveGuestReference(completed); clearWizardProgress(isGuest); onCreated(completed); } catch (error) { setMessage(friendlyError(error, 'Ошибка сохранения')); setBusy(''); } }
+  async function save() { setBusy('save'); try { const reference = await ensureSaved(); const completed = isGuest ? { ...reference, image_path: imageUrl || null } : reference; if (isGuest) saveGuestReference(completed); clearWizardProgress(progressOwner); onCreated(completed); } catch (error) { setMessage(friendlyError(error, 'Ошибка сохранения')); setBusy(''); } }
 
   const hairOptions = active.gender === 'Парень' ? maleHairOptions : active.gender === 'Девушка' ? femaleHairOptions : allHairOptions;
   const options = step.key === 'hair' ? hairOptions : step.key === 'outfit' ? outfitOptionsFor(values.theme) : step.options;

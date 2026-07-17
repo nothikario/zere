@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { Auth } from './components/Auth';
 import { Discover } from './components/Discover';
+import { FirstReferenceCelebration } from './components/FirstReferenceCelebration';
 import { Gallery } from './components/Gallery';
 import { Header, Page } from './components/Header';
 import { Home } from './components/Home';
 import { LanguageSelect } from './components/LanguageSelect';
+import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ProfileSettings } from './components/ProfileSettings';
 import { ReferenceForm } from './components/ReferenceForm';
@@ -26,6 +28,8 @@ export default function App() {
   const [profileChecked, setProfileChecked] = useState(false); const [page, setPage] = useState<Page>('home');
   const [references, setReferences] = useState<ArtReference[]>([]); const [loading, setLoading] = useState(true);
   const [guest, setGuest] = useState(false); const [usage, setUsage] = useState<Usage>();
+  const [celebrateFirstReference, setCelebrateFirstReference] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [guestReferences, setGuestReferences] = useState<ArtReference[]>(() => { const item = loadGuestReference(); return item ? [item] : []; });
   useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); }); const { data } = supabase.auth.onAuthStateChange((_event, next) => { setSession(next); if (!next) setProfile(null); }); return () => data.subscription.unsubscribe(); }, []);
   useEffect(() => { if (!session) return; setGuest(false); setProfileChecked(false); Promise.all([loadMyProfile(session.user.id), loadReferences(), visitAndGetUsage()]).then(([found, items, currentUsage]) => { setProfile(found); setReferences(items); setUsage(currentUsage); setProfileChecked(true); }).catch(() => setProfileChecked(true)); }, [session]);
@@ -35,12 +39,12 @@ export default function App() {
   if (!session && !guest) return <div className="auth-shell"><div className="auth-intro"><div className="brand-static">Refri<span>.</span></div><h1>{language === 'en' ? <>Your ideas.<br/><em>Your characters.</em></> : <>Твои идеи.<br/><em>Твои персонажи.</em></>}</h1><p>{language === 'en' ? 'Collect references, create visuals, and discover other artists.' : 'Собирай референсы, создавай визуалы и находи других художников.'}</p></div><Auth onGuest={() => setGuest(true)}/></div>;
   if (guest) return <GuestApp page={page} setPage={setPage} references={guestReferences} setReferences={setGuestReferences} onExit={() => { clearGuestSession(); setGuestReferences([]); setGuest(false); setLanguageChosen(false); setPage('home'); }}/>;
   if (!session) return null;
-  if (!profile) return <ProfileSetup userId={session.user.id} onReady={setProfile}/>;
+  if (!profile) return <ProfileSetup userId={session.user.id} onReady={(created) => { setProfile(created); setShowOnboarding(true); }}/>;
   const refreshUsage = async () => setUsage(await visitAndGetUsage());
-  return <><Header page={page} username={profile.username} avatarUrl={profile.avatar_url} onNavigate={setPage} onSignOut={async () => { await supabase.auth.signOut(); setLanguageChosen(false); setPage('home'); }}/>{page === 'home' && <Home profile={profile} usage={usage} onUsageChange={refreshUsage} onCreate={() => setPage('create')} onGallery={() => setPage('gallery')} onDiscover={() => setPage('discover')}/>} {page === 'create' && <ReferenceForm onCreated={async () => { setReferences(await loadReferences()); await refreshUsage(); setPage('gallery'); }}/>} {page === 'gallery' && <Gallery references={references} setReferences={setReferences} onCreate={() => setPage('create')} onReward={refreshUsage}/>} {page === 'training' && <Training/>}{page === 'shop' && usage && <Shop usage={usage} onUpdated={refreshUsage}/>} {page === 'discover' && <Discover/>}{page === 'profile' && <ProfileSettings profile={profile} onUpdated={setProfile}/>}</>;
+  return <><Header page={page} username={profile.username} avatarUrl={profile.avatar_url} onNavigate={setPage} onSignOut={async () => { await supabase.auth.signOut(); setLanguageChosen(false); setPage('home'); }}/>{page === 'home' && <Home profile={profile} usage={usage} onUsageChange={refreshUsage} onCreate={() => setPage('create')} onGallery={() => setPage('gallery')} onDiscover={() => setPage('discover')}/>} {page === 'create' && <ReferenceForm key={session.user.id} progressOwner={session.user.id} onCreated={async () => { const isFirst = references.length === 0; setReferences(await loadReferences()); await refreshUsage(); setPage('gallery'); if (isFirst) setCelebrateFirstReference(true); }}/>} {page === 'gallery' && <Gallery references={references} setReferences={setReferences} onCreate={() => setPage('create')} onReward={refreshUsage}/>} {page === 'training' && <Training/>}{page === 'shop' && usage && <Shop usage={usage} onUpdated={refreshUsage}/>} {page === 'discover' && <Discover/>}{page === 'profile' && <ProfileSettings profile={profile} onUpdated={setProfile}/>} {celebrateFirstReference && <FirstReferenceCelebration onClose={() => setCelebrateFirstReference(false)}/>} {showOnboarding && <OnboardingTutorial onClose={() => setShowOnboarding(false)} onStartCreating={() => { setShowOnboarding(false); setPage('create'); }}/>}</>;
 }
 
 type GuestProps = { page: Page; setPage: (page: Page) => void; references: ArtReference[]; setReferences: React.Dispatch<React.SetStateAction<ArtReference[]>>; onExit: () => void };
 function GuestApp({ page, setPage, references, setReferences, onExit }: GuestProps) {
-  return <><Header page={page} isGuest onNavigate={setPage} onSignOut={onExit}/>{page === 'create' ? <ReferenceForm isGuest onCreated={(reference) => { if (reference) setReferences([reference]); setPage('gallery'); }}/> : page === 'gallery' ? <Gallery isGuest references={references} setReferences={setReferences} onCreate={() => setPage('create')} onReward={() => undefined}/> : page === 'training' ? <Training/> : <Home onCreate={() => setPage('create')} onGallery={() => setPage('gallery')} onDiscover={() => undefined}/>}</>;
+  return <><Header page={page} isGuest onNavigate={setPage} onSignOut={onExit}/>{page === 'create' ? <ReferenceForm isGuest progressOwner="guest" onCreated={(reference) => { if (reference) setReferences([reference]); setPage('gallery'); }}/> : page === 'gallery' ? <Gallery isGuest references={references} setReferences={setReferences} onCreate={() => setPage('create')} onReward={() => undefined}/> : page === 'training' ? <Training/> : <Home onCreate={() => setPage('create')} onGallery={() => setPage('gallery')} onDiscover={() => undefined}/>}</>;
 }

@@ -1,0 +1,9 @@
+.celebration-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:#25251f80;backdrop-filter:blur(6px)}
+.celebration-card{position:relative;width:min(440px,100%);overflow:hidden;padding:105px 32px 32px;border:1px solid var(--line);border-radius:26px;background:var(--paper);text-align:center;box-shadow:0 28px 80px #24241d45;animation:celebration-in .35s ease-out}
+.celebration-card h2{margin:0 0 10px;font-size:30px;letter-spacing:-.03em}.celebration-card p{margin:0 auto 25px;color:#77736c;line-height:1.55}.celebration-card button{border:0;border-radius:11px;padding:14px 20px;background:var(--sage);color:#fff;font-weight:700}
+.falling-star{position:absolute;top:38px;left:calc(50% - 28px);z-index:2;color:#e7b94f;font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px #c6923260);animation:star-fall .9s cubic-bezier(.2,.75,.35,1.15)}
+.star-glow{position:absolute;top:44px;left:calc(50% - 48px);width:96px;color:#ead18c;font-size:90px;line-height:.7;opacity:.35;animation:star-glow 1.4s ease-in-out infinite alternate}
+@keyframes celebration-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes star-fall{0%{transform:translateY(-150px) rotate(-70deg);opacity:0}70%{transform:translateY(8px) rotate(8deg);opacity:1}100%{transform:translateY(0) rotate(0)}}
+@keyframes star-glow{from{transform:scale(.8);opacity:.2}to{transform:scale(1.15);opacity:.5}}
+@media(prefers-reduced-motion:reduce){.celebration-card,.falling-star,.star-glow{animation:none}}
