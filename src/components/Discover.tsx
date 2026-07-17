@@ -24,5 +24,12 @@ function SelectedProfile({ profile, references, stats, onBack }: { profile: Prof
   </section>;
 }
 
-function ProfileAvatar({ profile }: { profile: Profile }) { return profile.avatar_url ? <img className="avatar" src={profile.avatar_url} alt="" style={{ objectFit: 'cover' }}/> : <span className="avatar">{profile.display_name[0]}</span>; }
+function ProfileAvatar({ profile }: { profile: Profile }) {
+  const [open, setOpen] = useState(false);
+  const show = (event: React.MouseEvent | React.KeyboardEvent) => { event.stopPropagation(); setOpen(true); };
+  const avatar = profile.avatar_url
+    ? <img className="avatar" src={profile.avatar_url} alt="" style={{ objectFit: 'cover' }}/>
+    : <span className="avatar">{profile.display_name[0]}</span>;
+  return <><span className="avatar-preview" role="button" tabIndex={0} aria-label={`Открыть аватар ${profile.display_name}`} onClick={show} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') show(event); }}>{avatar}</span>{open && profile.avatar_url && <ImageLightbox src={profile.avatar_url} alt={profile.display_name} onClose={() => setOpen(false)}/>}</>;
+}
 function PublicImage({ path, title }: { path: string | null; title: string }) { const url = path ? getImageUrl(path) : ''; const [open, setOpen] = useState(false); return <><div className="public-image" onClick={() => url && setOpen(true)}>{url ? <img src={url} alt={title}/> : <span>✦</span>}</div>{open && <ImageLightbox src={url} alt={title} onClose={() => setOpen(false)}/>}</>; }

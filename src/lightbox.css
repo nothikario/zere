@@ -1,4 +1,6 @@
 .artwork:has(img),.public-image:has(img){cursor:zoom-in}
-.image-lightbox{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:28px;background:#111e;backdrop-filter:blur(8px)}
-.image-lightbox img{max-width:min(1200px,94vw);max-height:90vh;object-fit:contain;border-radius:10px;box-shadow:0 24px 80px #0008}
+.artwork,.public-image,.reference-card,.public-grid article{min-width:0;max-width:100%}.artwork img,.public-image img{display:block;max-width:100%}
+.image-lightbox{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;width:100vw;height:100dvh;padding:28px;overflow:hidden;background:#111e;backdrop-filter:blur(8px)}
+.image-lightbox img{display:block;width:auto;height:auto;max-width:calc(100vw - 56px);max-height:calc(100dvh - 56px);object-fit:contain;border-radius:10px;box-shadow:0 24px 80px #0008}
 .image-lightbox button{position:fixed;top:18px;right:24px;width:46px;height:46px;border:1px solid #fff5;border-radius:50%;background:#111b;color:#fff;font-size:30px}
+.avatar-preview{display:inline-grid;place-content:center;flex:none;border-radius:50%;cursor:zoom-in}.avatar-preview:focus-visible{outline:3px solid var(--sage);outline-offset:3px}@media(max-width:600px){.image-lightbox{padding:14px}.image-lightbox img{max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px)}.image-lightbox button{top:10px;right:10px}}
