@@ -26,7 +26,7 @@ export function ReferenceCard({ reference, onDelete, onHide, onGenerated, onRewa
 
   async function generate() {
     setBusy(true); setMessage('');
-    try { const path = await generateReferenceImage(reference); onGenerated(path, 'image_path'); setImageUrl(getImageUrl(path)); }
+    try { const path = await generateReferenceImage(reference); onGenerated(path, 'image_path'); setImageUrl(getImageUrl(path, Date.now())); }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Ошибка генерации'); }
     finally { setBusy(false); }
   }
@@ -46,7 +46,7 @@ export function ReferenceCard({ reference, onDelete, onHide, onGenerated, onRewa
       <dl><div><dt>Волосы</dt><dd>{reference.hair}</dd></div><div><dt>Телосложение</dt><dd>{reference.build}</dd></div><div><dt>Одежда</dt><dd>{reference.outfit}</dd></div></dl>
       <button className="drawing-text-button" onClick={() => setShowText(!showText)}>✎ {showText ? 'Скрыть описание' : 'Рисовать по тексту'}</button>
       {showText && <section className="drawing-description"><p>{translating ? (language === 'en' ? 'Translating…' : 'Переводим…') : shownDetails}</p><p>{reference.prompt}</p></section>}
-      {!isGuest && <><button className="generate" disabled={busy} onClick={generate}>{busy ? 'Создаём…' : reference.image_path ? '↻ Сгенерировать заново' : '✦ Сгенерировать картинку'}</button><label className="upload-art">{uploading ? 'Проверяем рисунок…' : '＋ Прикрепить свой рисунок'}<input name={`reference-art-${reference.id}`} type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} disabled={uploading}/></label></>}{message && <p className="message">{message}</p>}
+      {!isGuest && <><button className="generate" disabled={busy} onClick={generate}>{busy ? (language === 'en' ? 'Generating…' : 'Создаём…') : reference.image_path ? (language === 'en' ? '↻ Generate again' : '↻ Сгенерировать заново') : (language === 'en' ? '✦ Generate image' : '✦ Сгенерировать картинку')}</button><label className="upload-art">{uploading ? 'Проверяем рисунок…' : '＋ Прикрепить свой рисунок'}<input name={`reference-art-${reference.id}`} type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} disabled={uploading}/></label></>}{message && <p className="message">{message}</p>}
     </div>
     {fullImage && imageUrl && <ImageLightbox src={imageUrl} alt={reference.title} onClose={() => setFullImage(false)}/>}</article>;
 }

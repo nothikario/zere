@@ -79,9 +79,10 @@ export async function generateGuestImage(prompt: string) {
   return `data:${data.mimeType ?? 'image/png'};base64,${data.imageBase64}`;
 }
 
-export function getImageUrl(path: string) {
+export function getImageUrl(path: string, cacheKey?: number) {
   if (path.startsWith('data:') || path.startsWith('http')) return path;
-  return supabase.storage.from('reference-images').getPublicUrl(path).data.publicUrl;
+  const publicUrl = supabase.storage.from('reference-images').getPublicUrl(path).data.publicUrl;
+  return cacheKey ? `${publicUrl}?v=${cacheKey}` : publicUrl;
 }
 
 export async function loadPublicReferences(userId: string) {
