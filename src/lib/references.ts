@@ -70,10 +70,16 @@ export async function generateReferenceImage(reference: ArtReference, styleExamp
   const path = `${userId}/${reference.id}-${variationId}.png`;
   const upload = await supabase.storage.from('reference-images').upload(path, bytes, { contentType: data.mimeType ?? 'image/png' });
   if (upload.error) throw upload.error;
-  const update = await supabase.from('references').update({ image_path: path }).eq('id', reference.id);
-  if (update.error) {
+  const update = await supabase
+    .from('references')
+    .update({ image_path: path })
+    .eq('id', reference.id)
+    .eq('user_id', userId)
+    .select('image_path')
+    .single();
+  if (update.error || update.data?.image_path !== path) {
     await supabase.storage.from('reference-images').remove([path]);
-    throw update.error;
+    throw update.error ?? new Error('Новая картинка не сохранилась. Попробуй войти в аккаунт заново.');
   }
   if (reference.image_path && reference.image_path !== path) {
     await supabase.storage.from('reference-images').remove([reference.image_path]);
