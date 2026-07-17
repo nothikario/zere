@@ -1,0 +1,24 @@
+.home-actions.with-discover {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(920px, calc(100vw - 40px));
+  max-width: none;
+}
+
+.home-actions .discover-action {
+  border-color: var(--sage);
+  background: color-mix(in srgb, var(--sage) 10%, var(--paper));
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--sage) 20%, transparent);
+}
+
+.home-actions .discover-action:hover,
+.home-actions .discover-action:focus-visible {
+  border-color: var(--sage);
+  background: color-mix(in srgb, var(--sage) 17%, var(--paper));
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--sage) 30%, transparent);
+}
+
+@media (max-width: 760px) {
+  .home-actions.with-discover {
+    grid-template-columns: 1fr;
+  }
+}

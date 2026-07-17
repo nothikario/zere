@@ -5,6 +5,7 @@ import './index.css';
 import './lightbox.css';
 import './mobile-menu.css';
 import './theme-colors.css';
+import './home-actions.css';
 import { LanguageProvider } from './lib/language';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

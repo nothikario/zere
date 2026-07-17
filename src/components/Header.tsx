@@ -17,6 +17,7 @@ export function Header({ page, username, avatarUrl, isGuest = false, onNavigate,
       <button className={navClass('training')} onClick={() => navigate('training')}>{en ? 'Start tutorial' : 'Пройти обучение'}</button>
       <button className={navClass('create')} onClick={() => navigate('create')}>{en ? 'Create reference' : 'Создать референс'}</button>
       {(username || isGuest) && <button className={navClass('gallery')} onClick={() => navigate('gallery')}>{en ? 'My references' : 'Мои референсы'}</button>}
+      {username && <button className={navClass('discover')} onClick={() => navigate('discover')}>{en ? 'Find an artist' : 'Найти художника'}</button>}
       {username && <><button className={navClass('shop')} onClick={() => navigate('shop')}>{en ? 'Shop' : 'Магазин'}</button><button className={navClass('profile')} onClick={() => navigate('profile')}>{avatarUrl && <img src={avatarUrl} alt=""/>}<span className="desktop-profile">@{username}</span><span className="mobile-profile">{en ? 'Account settings' : 'Настройки аккаунта'}</span></button></>}
       <button className="icon-button sign-out" title={en ? 'Sign out' : 'Выйти'} onClick={signOut}><span className="desktop-sign-out">↗</span><span className="mobile-sign-out">{en ? 'Sign out' : 'Выйти'}</span></button>
     </nav>
