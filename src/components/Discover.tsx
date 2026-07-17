@@ -18,18 +18,19 @@ export function Discover() {
 }
 
 function SelectedProfile({ profile, references, stats, onBack }: { profile: Profile; references: ArtReference[]; stats: PublicProfileStats | null; onBack: () => void }) {
-  return <section><button className="back-button" onClick={onBack}>← К результатам</button><div className="public-profile"><ProfileAvatar profile={profile}/><div><h2>{profile.display_name}</h2><p>@{profile.username}</p></div></div>
+  return <section className="selected-public-profile"><button className="back-button" onClick={onBack}>← К результатам</button><div className="public-profile"><ProfileAvatar profile={profile} preview/><div><h2>{profile.display_name}</h2><p>@{profile.username}</p></div></div>
     {stats && <div className="streak-card">🔥 Стрик: <b>{stats.streak} дн.</b><span>Референсы: {stats.references_count}/{stats.references_limit} · В день: {stats.daily_limit}</span></div>}
     <div className="public-grid">{references.map((item) => <article key={item.id}><PublicImage path={item.final_art_path || item.image_path} title={item.title}/><div><h3>{item.title}</h3><p>{item.theme} · {item.pose}</p></div></article>)}</div>{!references.length && <p className="empty">У этого пользователя пока нет референсов.</p>}
   </section>;
 }
 
-function ProfileAvatar({ profile }: { profile: Profile }) {
+function ProfileAvatar({ profile, preview = false }: { profile: Profile; preview?: boolean }) {
   const [open, setOpen] = useState(false);
   const show = (event: React.MouseEvent | React.KeyboardEvent) => { event.stopPropagation(); setOpen(true); };
   const avatar = profile.avatar_url
     ? <img className="avatar" src={profile.avatar_url} alt="" style={{ objectFit: 'cover' }}/>
     : <span className="avatar">{profile.display_name[0]}</span>;
-  return <><span className="avatar-preview" role="button" tabIndex={0} aria-label={`Открыть аватар ${profile.display_name}`} onClick={show} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') show(event); }}>{avatar}</span>{open && profile.avatar_url && <ImageLightbox src={profile.avatar_url} alt={profile.display_name} onClose={() => setOpen(false)}/>}</>;
+  if (!preview || !profile.avatar_url) return avatar;
+  return <><button type="button" className="avatar-view-button" aria-label={`Открыть аватар ${profile.display_name}`} onClick={show}>{avatar}</button>{open && <ImageLightbox src={profile.avatar_url} alt={profile.display_name} onClose={() => setOpen(false)}/>}</>;
 }
 function PublicImage({ path, title }: { path: string | null; title: string }) { const url = path ? getImageUrl(path) : ''; const [open, setOpen] = useState(false); return <><div className="public-image" onClick={() => url && setOpen(true)}>{url ? <img src={url} alt={title}/> : <span>✦</span>}</div>{open && <ImageLightbox src={url} alt={title} onClose={() => setOpen(false)}/>}</>; }
