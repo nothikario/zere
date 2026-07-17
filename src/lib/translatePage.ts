@@ -7,7 +7,7 @@ const translations: [string, string][] = [
   ['ЕЖЕДНЕВНЫЙ ПОДАРОК', 'DAILY GIFT'], ['ПОСЛЕДНИЙ ШАГ', 'FINAL STEP'], ['РЕФЕРЕНС ГОТОВ', 'REFERENCE READY'],
   ['ПЕРСОНАЖ', 'CHARACTER'], ['ШАГ', 'STEP'], ['Что создадим сегодня?', 'What will we create today?'],
   ['Создать референс', 'Create reference'], ['Мои референсы', 'My references'], ['Скрытые референсы', 'Hidden references'],
-  ['Создать генерацию', 'Generate image'], ['Сгенерировать заново', 'Generate again'], ['Сгенерировать картинку', 'Generate image'],
+  ['Создаём…', 'Generating…'], ['Создать генерацию', 'Generate image'], ['Сгенерировать заново', 'Generate again'], ['Сгенерировать картинку', 'Generate image'],
   ['Здесь появится генерация', 'Your generated image will appear here'], ['Здесь появится визуал', 'The visual will appear here'],
   ['Посмотри, что получилось', 'See what we created'], ['В мои референсы', 'Add to my references'], ['Далее', 'Next'], ['Назад', 'Back'],
   ['Регистрация', 'Sign up'], ['Вход', 'Sign in'], ['Создать аккаунт', 'Create account'], ['Войти', 'Sign in'],
