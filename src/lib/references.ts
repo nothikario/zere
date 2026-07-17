@@ -57,19 +57,27 @@ async function fileToBase64(file: File) {
 }
 
 export async function generateReferenceImage(reference: ArtReference, styleExample?: File) {
+  const variationId = crypto.randomUUID();
+  const generationPrompt = `${reference.prompt}\nCreate a fresh alternative image with a noticeably different composition, camera angle, and small visual details while preserving the requested character. Variation ID: ${variationId}.`;
   const { data, error } = await supabase.functions.invoke('ai', {
-    body: { mode: 'image', prompt: reference.prompt, styleImageBase64: styleExample ? await fileToBase64(styleExample) : undefined, styleImageMimeType: styleExample?.type },
+    body: { mode: 'image', prompt: generationPrompt, styleImageBase64: styleExample ? await fileToBase64(styleExample) : undefined, styleImageMimeType: styleExample?.type },
   });
   if (error || !data?.imageBase64) throw new Error(data?.error ?? error?.message ?? 'Не удалось создать изображение');
   const session = await supabase.auth.getSession();
   const userId = session.data.session?.user.id;
   if (!userId) throw new Error('Нужно войти в аккаунт');
   const bytes = Uint8Array.from(atob(data.imageBase64), (char) => char.charCodeAt(0));
-  const path = `${userId}/${reference.id}.png`;
-  const upload = await supabase.storage.from('reference-images').upload(path, bytes, { contentType: data.mimeType ?? 'image/png', upsert: true });
+  const path = `${userId}/${reference.id}-${variationId}.png`;
+  const upload = await supabase.storage.from('reference-images').upload(path, bytes, { contentType: data.mimeType ?? 'image/png' });
   if (upload.error) throw upload.error;
   const update = await supabase.from('references').update({ image_path: path }).eq('id', reference.id);
-  if (update.error) throw update.error;
+  if (update.error) {
+    await supabase.storage.from('reference-images').remove([path]);
+    throw update.error;
+  }
+  if (reference.image_path && reference.image_path !== path) {
+    await supabase.storage.from('reference-images').remove([reference.image_path]);
+  }
   return path;
 }
 
