@@ -1,9 +1,14 @@
 import { supabase } from './supabase';
 
-export async function getAccountEmail() {
+export async function getAccountDetails() {
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
-  return data.user.email ?? '';
+  const providers = data.user.identities?.map((identity) => identity.provider) ?? [];
+  return {
+    email: data.user.email ?? '',
+    usesGoogle: providers.includes('google'),
+    hasEmailPassword: providers.includes('email'),
+  };
 }
 
 export async function requestEmailChange(email: string) {

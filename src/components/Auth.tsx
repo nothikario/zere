@@ -79,6 +79,7 @@ export function Auth({ onGuest }: { onGuest: () => void }) {
     </div>
     <p className="auth-caption">{mode === 'signup' ? (en ? 'Create an account and save your references' : 'Создай аккаунт и сохраняй свои референсы') : (en ? 'Continue working with your collection' : 'Продолжи работу со своей коллекцией')}</p>
     <button type="button" className="google-auth-button" disabled={busy} onClick={continueWithGoogle}><span className="google-mark">G</span>{en ? 'Continue with Google' : 'Продолжить через Google'}</button>
+    <small className="google-auth-hint">{en ? 'No separate password is created — sign in with the same Google account.' : 'Отдельный пароль не создаётся — входи через тот же аккаунт Google.'}</small>
     <div className="auth-divider"><span>{en ? 'or use email' : 'или через email'}</span></div>
     {awaitingCode ? <form onSubmit={verifyCode} className="form">
       <input name="verification-code" inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="Код из письма" value={code} onChange={(event) => setCode(event.target.value.trim())} required />
