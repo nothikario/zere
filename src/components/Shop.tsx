@@ -2,8 +2,47 @@ import { useState } from 'react';
 import { buyCreationSlot, buyReferenceCapacity, claimDailyReward, Usage } from '../lib/usage';
 
 export function Shop({ usage, onUpdated }: { usage: Usage; onUpdated: () => Promise<void> }) {
-  const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
-  async function purchase(action: () => Promise<unknown>, success: string) { setBusy(true); try { await action(); setMessage(success); await onUpdated(); } catch (error) { setMessage(error instanceof Error ? error.message : 'Недостаточно звёзд'); } finally { setBusy(false); } }
-  async function claim() { setBusy(true); try { setMessage(`Твой подарок: ${await claimDailyReward()}`); await onUpdated(); } catch { setMessage('Сегодня подарок уже получен.'); } finally { setBusy(false); } }
-  return <main className="page shop-page"><div className="eyebrow">МАГАЗИН И ПОДАРКИ</div><h1>Твои <em>звёздочки</em></h1><div className="stars-balance">⭐ <b>{usage.stars}</b><span>твой баланс</span></div><div className="shop-list"><section className="shop-item"><div><span>＋1</span><h2>Купить место в галерее</h2><p>Одно постоянное место для хранения референса.</p><strong>20 ⭐</strong></div><button disabled={busy || usage.stars < 20} onClick={() => purchase(buyReferenceCapacity, 'Место добавлено навсегда!')}>Купить</button></section><section className="shop-item"><div><span>✦</span><h2>Купить количество созданных референсов</h2><p>Постоянный +1 к дневному лимиту создания.</p><strong>10 ⭐</strong></div><button disabled={busy || usage.stars < 10} onClick={() => purchase(buyCreationSlot, 'Постоянный лимит создания увеличен на 1!')}>Купить</button></section></div><section className="daily-gift"><span>🎁</span><div><div className="eyebrow">ЕЖЕДНЕВНЫЙ ПОДАРОК</div><h2>Стрик: {usage.streak} дней</h2><p>Только 1–2 звезды или +1 создание референса на 24 часа.</p></div><button disabled={busy || !usage.reward_available} onClick={claim}>{usage.reward_available ? 'Забрать подарок' : 'Уже получено'}</button></section>{message && <p className="shop-message">{message}</p>}</main>;
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function purchase(action: () => Promise<unknown>, success: string) {
+    setBusy(true);
+    try {
+      await action();
+      setMessage(success);
+      await onUpdated();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Недостаточно звёзд');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function claim() {
+    setBusy(true);
+    try {
+      setMessage(`Твой подарок: ${await claimDailyReward()}`);
+      await onUpdated();
+    } catch {
+      setMessage('Сегодня подарок уже получен.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <main className="page shop-page">
+    <div className="eyebrow">МАГАЗИН И ПОДАРКИ</div>
+    <h1>Твои <em>звёздочки</em></h1>
+    <section className="daily-gift">
+      <span>🎁</span>
+      <div><div className="eyebrow">ЕЖЕДНЕВНЫЙ ПОДАРОК</div><h2>Стрик: {usage.streak} дней</h2><p>Только 1–2 звезды или +1 создание референса на 24 часа.</p></div>
+      <button disabled={busy || !usage.reward_available} onClick={claim}>{usage.reward_available ? 'Забрать подарок' : 'Уже получено'}</button>
+    </section>
+    {message && <p className="shop-message">{message}</p>}
+    <div className="stars-balance">⭐ <b>{usage.stars}</b><span>твой баланс</span></div>
+    <div className="shop-list">
+      <section className="shop-item"><div><span>＋1</span><h2>Купить место в галерее</h2><p>Одно постоянное место для хранения референса.</p><strong>20 ⭐</strong></div><button disabled={busy || usage.stars < 20} onClick={() => purchase(buyReferenceCapacity, 'Место добавлено навсегда!')}>Купить</button></section>
+      <section className="shop-item"><div><span>✦</span><h2>Купить количество созданных референсов</h2><p>Постоянный +1 к дневному лимиту создания.</p><strong>10 ⭐</strong></div><button disabled={busy || usage.stars < 10} onClick={() => purchase(buyCreationSlot, 'Постоянный лимит создания увеличен на 1!')}>Купить</button></section>
+    </div>
+  </main>;
 }
