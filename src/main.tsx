@@ -8,6 +8,7 @@ import './theme-colors.css';
 import './home-actions.css';
 import './celebration.css';
 import './onboarding.css';
+import './account-switcher.css';
 import { LanguageProvider } from './lib/language';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

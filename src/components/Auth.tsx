@@ -4,11 +4,11 @@ import { useLanguage } from '../lib/language';
 
 const inspirationWords = ['вдохновляйся', 'идеи на выбор', 'куча тематик!'];
 
-export function Auth({ onGuest }: { onGuest: () => void }) {
+export function Auth({ onGuest, initialEmail = '' }: { onGuest: () => void; initialEmail?: string }) {
   const en = useLanguage().language === 'en';
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'signin' | 'signup'>('signup');
+  const [mode, setMode] = useState<'signin' | 'signup'>(initialEmail ? 'signin' : 'signup');
   const [wordIndex, setWordIndex] = useState(0);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
