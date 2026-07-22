@@ -21,6 +21,7 @@ import { applyTheme } from "./lib/themes";
 import { rememberAccount } from "./lib/account";
 import { usePageTranslation } from "./lib/translatePage";
 import { clearGuestSession, loadGuestReference, Usage, visitAndGetUsage } from "./lib/usage";
+import { clearWizardProgress } from "./lib/wizardPersistence";
 
 export default function App() {
   const { language } = useLanguage();
@@ -54,6 +55,9 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (!session) return;
+    clearGuestSession();
+    clearWizardProgress("guest");
+    setGuestReferences([]);
     setGuest(false);
     setProfileChecked(false);
     Promise.all([loadMyProfile(session.user.id), loadReferences(), visitAndGetUsage()])
@@ -76,6 +80,13 @@ export default function App() {
       avatarUrl: profile.avatar_url,
     });
   }, [session?.user.email, profile]);
+  const startGuestSession = () => {
+    clearGuestSession();
+    clearWizardProgress("guest");
+    setGuestReferences([]);
+    setPage("home");
+    setGuest(true);
+  };
   if (!languageChosen) return <LanguageSelect onContinue={() => setLanguageChosen(true)} />;
   if (loading || (session && !profileChecked))
     return (
@@ -107,7 +118,7 @@ export default function App() {
           </h1>
           <p>{language === "en" ? "Collect references, create visuals, and discover other artists." : "Собирай референсы, создавай визуалы и находи других художников."}</p>
         </div>
-        <Auth initialEmail={accountEmail} onGuest={() => setGuest(true)} />
+        <Auth initialEmail={accountEmail} onGuest={startGuestSession} />
       </div>
     );
   if (guest)
@@ -119,6 +130,7 @@ export default function App() {
         setReferences={setGuestReferences}
         onExit={() => {
           clearGuestSession();
+          clearWizardProgress("guest");
           setGuestReferences([]);
           setGuest(false);
           setLanguageChosen(false);
