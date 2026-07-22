@@ -3,6 +3,7 @@ import type { ArtReference } from './references';
 
 export type Usage = {
   streak: number;
+  max_streak: number;
   used_today: number;
   daily_limit: number;
   references_count: number;

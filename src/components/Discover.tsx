@@ -19,7 +19,7 @@ export function Discover() {
 
 function SelectedProfile({ profile, references, stats, onBack }: { profile: Profile; references: ArtReference[]; stats: PublicProfileStats | null; onBack: () => void }) {
   return <section className="selected-public-profile"><button className="back-button" onClick={onBack}>← К результатам</button><div className="public-profile"><ProfileAvatar profile={profile} preview/><div><h2>{profile.display_name}</h2><p>@{profile.username}</p></div></div>
-    {stats && <div className="streak-card">🔥 Стрик: <b>{stats.streak} дн.</b><span>Референсы: {stats.references_count}/{stats.references_limit} · В день: {stats.daily_limit}</span></div>}
+    {stats && <div className="streak-card">🔥 Сейчас: <b>{stats.streak} дн.</b><span>🏆 Рекорд: {stats.max_streak} дн. · Референсы: {stats.references_count}/{stats.references_limit} · В день: {stats.daily_limit}</span></div>}
     <div className="public-grid">{references.map((item) => <article key={item.id}><PublicImage path={item.final_art_path || item.image_path} title={item.title}/><div><h3>{item.title}</h3><p>{item.theme} · {item.pose}</p></div></article>)}</div>{!references.length && <p className="empty">У этого пользователя пока нет референсов.</p>}
   </section>;
 }

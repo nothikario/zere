@@ -10,7 +10,7 @@ export type Profile = {
   theme_key: ThemeKey;
 };
 
-export type PublicProfileStats = { streak: number; daily_limit: number; references_count: number; references_limit: number };
+export type PublicProfileStats = { streak: number; max_streak: number; daily_limit: number; references_count: number; references_limit: number };
 
 export async function loadPublicProfileStats(userId: string) {
   const { data, error } = await supabase.rpc('get_public_profile_stats', { target_user: userId });
